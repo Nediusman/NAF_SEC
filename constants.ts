@@ -1,5 +1,5 @@
 
-export const GEMINI_MODEL = 'gemini-3-flash-preview';
+export const GEMINI_MODEL = 'gemini-2.5-flash';
 
 export const SYSTEM_INSTRUCTION = `
 # SYSTEM PROMPT: NAF_SEC (Network Assessment & Forensic Security Expert Companion)

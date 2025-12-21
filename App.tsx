@@ -85,9 +85,9 @@ const App: React.FC = () => {
         <div className="p-4 border-t border-slate-800 hidden md:block">
           <div className="bg-slate-950/50 rounded p-3 text-xs text-slate-500 border border-slate-800">
             <div className="flex items-center gap-2 mb-1 text-emerald-500 font-bold">
-              <Activity size={12} /> PRO SYSTEM READY
+              <Activity size={12} /> SYSTEM ONLINE
             </div>
-            <p>v2.0.1-flash</p>
+            <p>Gemini-2.5-Flash</p>
           </div>
         </div>
       </aside>
@@ -96,7 +96,7 @@ const App: React.FC = () => {
       <main className="flex-1 flex flex-col relative">
         <header className="h-16 bg-slate-900/50 border-b border-slate-800 flex items-center justify-between px-6 backdrop-blur-sm z-10">
           <h2 className="font-mono text-sm text-emerald-400 font-bold tracking-widest uppercase">
-            {currentView === AppView.CHAT && "Interactive Shell // Gemini-3-Flash"}
+            {currentView === AppView.CHAT && "Interactive Shell // Gemini-2.5-Flash"}
             {currentView === AppView.LOG_ANALYZER && "Threat Detection Module"}
             {currentView === AppView.QUIZ && "Knowledge Validation"}
             {currentView === AppView.CHEAT_SHEET && "Master Reference Guide"}
