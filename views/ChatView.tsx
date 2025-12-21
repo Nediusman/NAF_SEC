@@ -92,7 +92,7 @@ const ChatView: React.FC = () => {
       // Attempt to clean up JSON error dumps from the API
       if (typeof cleanError === 'string' && (cleanError.includes('{') || cleanError.includes('Quota exceeded'))) {
          if (cleanError.includes('429') || cleanError.toLowerCase().includes('quota') || cleanError.includes('RESOURCE_EXHAUSTED')) {
-            cleanError = "⚠️ **System Overload (Rate Limit 429)**\n\nThe AI model is currently experiencing heavy traffic or your key has exceeded its free tier quota. Please wait a moment before trying again, or try a different command.";
+            cleanError = "⚠️ **System Overload (Rate Limit 429)**\n\nThe AI model is currently experiencing heavy traffic or the shared demo key has exceeded its quota.\n\n**Action Required:**\nPlease click the **API Config** (Key Icon) button in the top-right corner to enter your own Google Gemini API Key for uninterrupted access.";
          } else {
              // Try to extract just the message if possible, otherwise truncate
              try {

