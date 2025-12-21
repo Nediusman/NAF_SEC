@@ -1,16 +1,41 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { SYSTEM_INSTRUCTION, GEMINI_MODEL } from '../constants';
 
+// Hardcoded API Key as requested
+const DEFAULT_API_KEY = "AIzaSyAl2v_WEWEcOjWjhTRaQLEqXCwh8jshYtg";
+
 // Helper to initialize the client only when needed
 const getClient = () => {
-  // Support both process.env (Node/Local) and import.meta.env (Vite/Vercel)
-  // Vercel Environment Variables starting with VITE_ are exposed to the client
-  const apiKey = (import.meta as any).env?.VITE_API_KEY || process.env.API_KEY;
+  // 1. Check Vite/Vercel Env Var
+  let apiKey = (import.meta as any).env?.VITE_API_KEY;
+
+  // 2. Check LocalStorage (User set via UI)
+  if (!apiKey || apiKey === 'undefined') {
+    apiKey = localStorage.getItem('gemini_api_key');
+  }
+
+  // 3. Check window.process (Console hack)
+  if (!apiKey) {
+    apiKey = (window as any).process?.env?.API_KEY;
+  }
+
+  // 4. Use hardcoded default
+  if (!apiKey) {
+    apiKey = DEFAULT_API_KEY;
+  }
   
   if (!apiKey) {
-    throw new Error("API Key is missing. In Vercel, set Environment Variable 'VITE_API_KEY'. Locally, check process.env.");
+    throw new Error("API_KEY_MISSING");
   }
   return new GoogleGenAI({ apiKey });
+};
+
+export const saveApiKey = (key: string) => {
+  localStorage.setItem('gemini_api_key', key);
+};
+
+export const hasApiKey = () => {
+   return !!((import.meta as any).env?.VITE_API_KEY || localStorage.getItem('gemini_api_key') || (window as any).process?.env?.API_KEY || DEFAULT_API_KEY);
 };
 
 export const sendMessageStream = async (

@@ -51,8 +51,6 @@ const ChatView: React.FC = () => {
     setIsProcessing(true);
 
     // Prepare history for API
-    // We strictly use the *existing* messages. The new message (userMsg) is sent 
-    // as the 'message' parameter to sendMessageStream, so it shouldn't be in history yet.
     const history = messages.map(m => ({
       role: m.sender === Sender.USER ? 'user' : 'model',
       parts: [{ text: m.content }]
@@ -88,10 +86,14 @@ const ChatView: React.FC = () => {
       ));
 
     } catch (error: any) {
-      const errorMessage = error.message || "Unknown connection error";
+      const isMissingKey = error.message === 'API_KEY_MISSING';
+      const errorMessage = isMissingKey 
+        ? "**Configuration Required**\n\nGoogle Gemini API Key is not configured. Please click the **API Config** button (Key Icon) in the top-right corner of the window to enter your key." 
+        : `**System Error:** ${error.message || "Unknown connection error"}`;
+
       setMessages(prev => prev.map(m => 
         m.id === aiMsgId 
-          ? { ...m, content: `**System Error:** ${errorMessage}\n\n*Troubleshooting:*\n1. **Vercel:** Go to Settings > Environment Variables. Add \`VITE_API_KEY\` with your Gemini Key.\n2. **Local:** Set \`window.process.env.API_KEY\` in console or use \`.env\` file.`, isStreaming: false } 
+          ? { ...m, content: errorMessage, isStreaming: false } 
           : m
       ));
     } finally {
