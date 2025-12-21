@@ -3,7 +3,7 @@ import { SYSTEM_INSTRUCTION, GEMINI_MODEL } from '../constants';
 
 // Default key removed to prevent Rate Limit (429) errors from shared usage.
 // Users must provide their own key via the UI.
-const DEFAULT_API_KEY = "";
+const DEFAULT_API_KEY = "AIzaSyAl2v_WEWEcOjWjhTRaQLEqXCwh8jshYtg";
 
 // Helper to initialize the client only when needed
 const getClient = () => {
