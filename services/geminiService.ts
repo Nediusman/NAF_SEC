@@ -1,9 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { SYSTEM_INSTRUCTION, GEMINI_MODEL } from '../constants';
 
-// Restoring the default API Key.
-// This allows the app to attempt to connect without user configuration.
-// If this key hits rate limits, the app will handle the 429 error and prompt the user.
+// Use the key provided for the presentation as the default fallback
 const DEFAULT_API_KEY = "AIzaSyAl2v_WEWEcOjWjhTRaQLEqXCwh8jshYtg";
 
 // Helper to initialize the client only when needed
@@ -16,17 +14,17 @@ const getClient = () => {
     apiKey = (import.meta as any).env?.VITE_API_KEY;
   }
 
-  // 3. Check process.env (Fallback)
+  // 3. Check process.env (Standard Injection)
   if (!apiKey) {
-    // Safety check for process.env access in browser
     try {
+      // @ts-ignore
       apiKey = process.env.API_KEY;
     } catch (e) {
       // Ignore process is not defined
     }
   }
 
-  // 4. Use Default (Hardcoded fallback)
+  // 4. Use Default (Hardcoded fallback for presentation)
   if (!apiKey) {
     apiKey = DEFAULT_API_KEY;
   }
@@ -42,10 +40,19 @@ export const saveApiKey = (key: string) => {
 };
 
 export const hasApiKey = () => {
-   // Check all sources including the hardcoded default
-   const key = localStorage.getItem('gemini_api_key') || 
-               (import.meta as any).env?.VITE_API_KEY || 
-               DEFAULT_API_KEY;
+   let key = localStorage.getItem('gemini_api_key') || 
+               (import.meta as any).env?.VITE_API_KEY;
+   
+   if (!key) {
+     try {
+       // @ts-ignore
+       key = process.env.API_KEY;
+     } catch (e) {}
+   }
+
+   // Always return true if we have a default key
+   if (!key && DEFAULT_API_KEY) return true;
+   
    return !!key;
 };
 
