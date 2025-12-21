@@ -1,8 +1,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { SYSTEM_INSTRUCTION, GEMINI_MODEL } from '../constants';
 
-// Default key removed to prevent Rate Limit (429) errors from shared usage.
-// Users must provide their own key via the UI.
+// Restoring the provided default API Key as requested.
+// NOTE: If this key hits rate limits (429), the app will prompt for a custom key via the UI.
 const DEFAULT_API_KEY = "AIzaSyAl2v_WEWEcOjWjhTRaQLEqXCwh8jshYtg";
 
 // Helper to initialize the client only when needed
