@@ -1,28 +1,22 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { SYSTEM_INSTRUCTION, GEMINI_MODEL } from '../constants';
 
-// Restoring the provided default API Key as requested.
-// NOTE: If this key hits rate limits (429), the app will prompt for a custom key via the UI.
-const DEFAULT_API_KEY = "AIzaSyAl2v_WEWEcOjWjhTRaQLEqXCwh8jshYtg";
+// Use the environment variable as the default. 
+// If this is not set, the app will prompt the user to enter a key via the UI.
+// This prevents Rate Limit (429) errors from shared hardcoded keys.
+const DEFAULT_API_KEY = process.env.API_KEY || "";
 
 // Helper to initialize the client only when needed
 const getClient = () => {
-  // PRIORITY CHANGE: Check LocalStorage first.
-  // This allows the user to override a dead/exhausted Environment Variable key
-  // by entering their own key in the UI.
+  // 1. Check LocalStorage first (User preference/override)
   let apiKey = localStorage.getItem('gemini_api_key');
 
-  // 2. Check Vite/Vercel Env Var (Fallback)
+  // 2. Check Vite Env Var (Specific to Vite setups)
   if (!apiKey || apiKey === 'undefined') {
     apiKey = (import.meta as any).env?.VITE_API_KEY;
   }
 
-  // 3. Check window.process (Console hack / Fallback)
-  if (!apiKey) {
-    apiKey = (window as any).process?.env?.API_KEY;
-  }
-
-  // 4. Use hardcoded default (Last resort)
+  // 3. Use Default (process.env.API_KEY)
   if (!apiKey) {
     apiKey = DEFAULT_API_KEY;
   }
@@ -38,7 +32,7 @@ export const saveApiKey = (key: string) => {
 };
 
 export const hasApiKey = () => {
-   return !!((import.meta as any).env?.VITE_API_KEY || localStorage.getItem('gemini_api_key') || (window as any).process?.env?.API_KEY || DEFAULT_API_KEY);
+   return !!(localStorage.getItem('gemini_api_key') || (import.meta as any).env?.VITE_API_KEY || DEFAULT_API_KEY);
 };
 
 // Retry helper for 429 errors
