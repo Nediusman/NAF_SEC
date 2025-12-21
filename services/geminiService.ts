@@ -1,9 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { SYSTEM_INSTRUCTION, GEMINI_MODEL } from '../constants';
 
-// Use the key provided for the presentation as the default fallback
-const DEFAULT_API_KEY = "AIzaSyAl2v_WEWEcOjWjhTRaQLEqXCwh8jshYtg";
-
 // Helper to initialize the client only when needed
 const getClient = () => {
   // 1. Check LocalStorage first (User preference/override)
@@ -24,11 +21,6 @@ const getClient = () => {
     }
   }
 
-  // 4. Use Default (Hardcoded fallback for presentation)
-  if (!apiKey) {
-    apiKey = DEFAULT_API_KEY;
-  }
-  
   if (!apiKey) {
     throw new Error("API_KEY_MISSING");
   }
@@ -49,9 +41,6 @@ export const hasApiKey = () => {
        key = process.env.API_KEY;
      } catch (e) {}
    }
-
-   // Always return true if we have a default key
-   if (!key && DEFAULT_API_KEY) return true;
    
    return !!key;
 };

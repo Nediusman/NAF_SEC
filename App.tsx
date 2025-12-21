@@ -15,8 +15,13 @@ const App: React.FC = () => {
 
   useEffect(() => {
     // Check if key exists on mount
-    if (localStorage.getItem('gemini_api_key')) {
-      setApiKeyInput(localStorage.getItem('gemini_api_key') || '');
+    const storedKey = localStorage.getItem('gemini_api_key');
+    if (storedKey) {
+      setApiKeyInput(storedKey);
+    } else if (!hasApiKey()) {
+      // If no key in storage and no env key, prompt user immediately
+      // This is crucial for first-time setup or presentations
+      setShowKeyModal(true);
     }
   }, []);
 
