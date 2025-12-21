@@ -14,8 +14,7 @@ const App: React.FC = () => {
   const [isKeySaved, setIsKeySaved] = useState(false);
 
   useEffect(() => {
-    // Check if key exists on mount, if not, maybe prompt? 
-    // For now, we just let the user click the button if they need to.
+    // Check if key exists on mount
     if (localStorage.getItem('gemini_api_key')) {
       setApiKeyInput(localStorage.getItem('gemini_api_key') || '');
     }
@@ -32,13 +31,15 @@ const App: React.FC = () => {
     }
   };
 
+  const openKeyModal = () => setShowKeyModal(true);
+
   const renderView = () => {
     switch (currentView) {
-      case AppView.CHAT: return <ChatView />;
-      case AppView.LOG_ANALYZER: return <LogAnalyzerView />;
-      case AppView.QUIZ: return <QuizView />;
+      case AppView.CHAT: return <ChatView onOpenApiKeyModal={openKeyModal} />;
+      case AppView.LOG_ANALYZER: return <LogAnalyzerView onOpenApiKeyModal={openKeyModal} />;
+      case AppView.QUIZ: return <QuizView onOpenApiKeyModal={openKeyModal} />;
       case AppView.CHEAT_SHEET: return <CheatSheetView />;
-      default: return <ChatView />;
+      default: return <ChatView onOpenApiKeyModal={openKeyModal} />;
     }
   };
 

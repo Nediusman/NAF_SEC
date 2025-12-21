@@ -5,7 +5,11 @@ import ChatMessage from '../components/ChatMessage';
 import { sendMessageStream } from '../services/geminiService';
 import { INITIAL_GREETING } from '../constants';
 
-const ChatView: React.FC = () => {
+interface ChatViewProps {
+  onOpenApiKeyModal: () => void;
+}
+
+const ChatView: React.FC<ChatViewProps> = ({ onOpenApiKeyModal }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'init',
@@ -88,13 +92,18 @@ const ChatView: React.FC = () => {
     } catch (error: any) {
       const isMissingKey = error.message === 'API_KEY_MISSING';
       let cleanError = error.message || "Unknown connection error";
+      let triggerModal = false;
+
+      // Check for Rate Limit or Missing Key
+      if (isMissingKey || cleanError.includes('429') || cleanError.toLowerCase().includes('quota') || cleanError.includes('RESOURCE_EXHAUSTED')) {
+         triggerModal = true;
+      }
       
       // Attempt to clean up JSON error dumps from the API
       if (typeof cleanError === 'string' && (cleanError.includes('{') || cleanError.includes('Quota exceeded'))) {
          if (cleanError.includes('429') || cleanError.toLowerCase().includes('quota') || cleanError.includes('RESOURCE_EXHAUSTED')) {
-            cleanError = "⚠️ **System Overload (Rate Limit 429)**\n\nThe AI model is currently experiencing heavy traffic or the shared demo key has exceeded its quota.\n\n**Action Required:**\nPlease click the **API Config** (Key Icon) button in the top-right corner to enter your own Google Gemini API Key for uninterrupted access.";
+            cleanError = "⚠️ **System Overload (Rate Limit 429)**\n\nThe AI model is currently experiencing heavy traffic or the key quota is exhausted.";
          } else {
-             // Try to extract just the message if possible, otherwise truncate
              try {
                 const jsonMatch = cleanError.match(/{.*}/s);
                 if (jsonMatch) {
@@ -108,7 +117,7 @@ const ChatView: React.FC = () => {
       }
 
       const errorMessage = isMissingKey 
-        ? "**Configuration Required**\n\nGoogle Gemini API Key is not configured. Please click the **API Config** button (Key Icon) in the top-right corner of the window to enter your key." 
+        ? "**Configuration Required**\n\nGoogle Gemini API Key is missing. The configuration window has been opened for you to enter your key." 
         : `**System Error:** ${cleanError}`;
 
       setMessages(prev => prev.map(m => 
@@ -116,6 +125,12 @@ const ChatView: React.FC = () => {
           ? { ...m, content: errorMessage, isStreaming: false } 
           : m
       ));
+
+      if (triggerModal) {
+        // Trigger modal opening slightly after message renders
+        setTimeout(() => onOpenApiKeyModal(), 500);
+      }
+
     } finally {
       setIsProcessing(false);
     }
