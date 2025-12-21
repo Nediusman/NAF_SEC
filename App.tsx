@@ -87,7 +87,7 @@ const App: React.FC = () => {
             <div className="flex items-center gap-2 mb-1 text-emerald-500 font-bold">
               <Activity size={12} /> PRO SYSTEM READY
             </div>
-            <p>v2.0.0-pro</p>
+            <p>v2.0.1-flash</p>
           </div>
         </div>
       </aside>
@@ -96,7 +96,7 @@ const App: React.FC = () => {
       <main className="flex-1 flex flex-col relative">
         <header className="h-16 bg-slate-900/50 border-b border-slate-800 flex items-center justify-between px-6 backdrop-blur-sm z-10">
           <h2 className="font-mono text-sm text-emerald-400 font-bold tracking-widest uppercase">
-            {currentView === AppView.CHAT && "Interactive Shell // Gemini-3-Pro"}
+            {currentView === AppView.CHAT && "Interactive Shell // Gemini-3-Flash"}
             {currentView === AppView.LOG_ANALYZER && "Threat Detection Module"}
             {currentView === AppView.QUIZ && "Knowledge Validation"}
             {currentView === AppView.CHEAT_SHEET && "Master Reference Guide"}

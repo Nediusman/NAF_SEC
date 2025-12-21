@@ -87,9 +87,29 @@ const ChatView: React.FC = () => {
 
     } catch (error: any) {
       const isMissingKey = error.message === 'API_KEY_MISSING';
+      let cleanError = error.message || "Unknown connection error";
+      
+      // Attempt to clean up JSON error dumps from the API
+      if (typeof cleanError === 'string' && (cleanError.includes('{') || cleanError.includes('Quota exceeded'))) {
+         if (cleanError.includes('429') || cleanError.toLowerCase().includes('quota') || cleanError.includes('RESOURCE_EXHAUSTED')) {
+            cleanError = "⚠️ **System Overload (Rate Limit 429)**\n\nThe AI model is currently experiencing heavy traffic or your key has exceeded its free tier quota. Please wait a moment before trying again, or try a different command.";
+         } else {
+             // Try to extract just the message if possible, otherwise truncate
+             try {
+                const jsonMatch = cleanError.match(/{.*}/s);
+                if (jsonMatch) {
+                    const parsed = JSON.parse(jsonMatch[0]);
+                    if (parsed.error?.message) cleanError = parsed.error.message;
+                }
+             } catch (e) {
+                 // Keep original if parse fails
+             }
+         }
+      }
+
       const errorMessage = isMissingKey 
         ? "**Configuration Required**\n\nGoogle Gemini API Key is not configured. Please click the **API Config** button (Key Icon) in the top-right corner of the window to enter your key." 
-        : `**System Error:** ${error.message || "Unknown connection error"}`;
+        : `**System Error:** ${cleanError}`;
 
       setMessages(prev => prev.map(m => 
         m.id === aiMsgId 
