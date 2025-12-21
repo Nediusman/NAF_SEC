@@ -7,20 +7,22 @@ const DEFAULT_API_KEY = "";
 
 // Helper to initialize the client only when needed
 const getClient = () => {
-  // 1. Check Vite/Vercel Env Var
-  let apiKey = (import.meta as any).env?.VITE_API_KEY;
+  // PRIORITY CHANGE: Check LocalStorage first.
+  // This allows the user to override a dead/exhausted Environment Variable key
+  // by entering their own key in the UI.
+  let apiKey = localStorage.getItem('gemini_api_key');
 
-  // 2. Check LocalStorage (User set via UI)
+  // 2. Check Vite/Vercel Env Var (Fallback)
   if (!apiKey || apiKey === 'undefined') {
-    apiKey = localStorage.getItem('gemini_api_key');
+    apiKey = (import.meta as any).env?.VITE_API_KEY;
   }
 
-  // 3. Check window.process (Console hack)
+  // 3. Check window.process (Console hack / Fallback)
   if (!apiKey) {
     apiKey = (window as any).process?.env?.API_KEY;
   }
 
-  // 4. Use hardcoded default (Now empty to force UI prompt)
+  // 4. Use hardcoded default (Last resort)
   if (!apiKey) {
     apiKey = DEFAULT_API_KEY;
   }
