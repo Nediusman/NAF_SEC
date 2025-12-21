@@ -30,8 +30,8 @@ const QuizView: React.FC = () => {
           selectedAnswer: null
         });
       }
-    } catch (e) {
-      alert("Failed to generate quiz. Try a different topic.");
+    } catch (e: any) {
+      alert(`Failed to generate quiz: ${e.message || "Check API Key"}`);
     } finally {
       setLoading(false);
     }

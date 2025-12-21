@@ -1,8 +1,17 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { SYSTEM_INSTRUCTION, GEMINI_MODEL } from '../constants';
 
-// Initialize the API client
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Helper to initialize the client only when needed
+const getClient = () => {
+  // Support both process.env (Node/Local) and import.meta.env (Vite/Vercel)
+  // Vercel Environment Variables starting with VITE_ are exposed to the client
+  const apiKey = (import.meta as any).env?.VITE_API_KEY || process.env.API_KEY;
+  
+  if (!apiKey) {
+    throw new Error("API Key is missing. In Vercel, set Environment Variable 'VITE_API_KEY'. Locally, check process.env.");
+  }
+  return new GoogleGenAI({ apiKey });
+};
 
 export const sendMessageStream = async (
   history: { role: string; parts: { text: string }[] }[],
@@ -10,6 +19,7 @@ export const sendMessageStream = async (
   onChunk: (text: string) => void
 ) => {
   try {
+    const ai = getClient();
     const chat = ai.chats.create({
       model: GEMINI_MODEL,
       config: {
@@ -34,6 +44,7 @@ export const sendMessageStream = async (
 
 export const analyzeLog = async (logContent: string) => {
   try {
+    const ai = getClient();
     const response = await ai.models.generateContent({
       model: GEMINI_MODEL,
       config: {
@@ -51,6 +62,7 @@ export const analyzeLog = async (logContent: string) => {
 
 export const generateQuiz = async (topic: string) => {
   try {
+    const ai = getClient();
     const response = await ai.models.generateContent({
       model: GEMINI_MODEL,
       config: {

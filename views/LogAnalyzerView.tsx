@@ -15,8 +15,8 @@ const LogAnalyzerView: React.FC = () => {
     try {
       const result = await analyzeLog(logInput);
       setAnalysisResult(result || "No analysis returned.");
-    } catch (error) {
-      setAnalysisResult("Error analyzing logs. Please check API connection.");
+    } catch (error: any) {
+      setAnalysisResult(`**Error:** ${error.message || "Failed to analyze logs. Check API Key."}`);
     } finally {
       setLoading(false);
     }

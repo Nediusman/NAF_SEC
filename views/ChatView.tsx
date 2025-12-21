@@ -51,14 +51,12 @@ const ChatView: React.FC = () => {
     setIsProcessing(true);
 
     // Prepare history for API
-    // Convert current messages to API format, filtering out system messages/errors if needed
+    // We strictly use the *existing* messages. The new message (userMsg) is sent 
+    // as the 'message' parameter to sendMessageStream, so it shouldn't be in history yet.
     const history = messages.map(m => ({
       role: m.sender === Sender.USER ? 'user' : 'model',
       parts: [{ text: m.content }]
     }));
-
-    // Add current user message
-    history.push({ role: 'user', parts: [{ text: userMsg.content }] });
 
     const aiMsgId = (Date.now() + 1).toString();
     const aiMsg: Message = {
@@ -89,10 +87,11 @@ const ChatView: React.FC = () => {
           : m
       ));
 
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error.message || "Unknown connection error";
       setMessages(prev => prev.map(m => 
         m.id === aiMsgId 
-          ? { ...m, content: "Connection interrupted. Please check your API configuration.", isStreaming: false } 
+          ? { ...m, content: `**System Error:** ${errorMessage}\n\n*Troubleshooting:*\n1. **Vercel:** Go to Settings > Environment Variables. Add \`VITE_API_KEY\` with your Gemini Key.\n2. **Local:** Set \`window.process.env.API_KEY\` in console or use \`.env\` file.`, isStreaming: false } 
           : m
       ));
     } finally {
