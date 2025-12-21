@@ -1,14 +1,10 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { SYSTEM_INSTRUCTION, GEMINI_MODEL } from '../constants';
 
-// Known exhausted keys that should be rejected to prevent 429 loops
-const EXHAUSTED_KEYS = [
-  "AIzaSyAl2v_WEWEcOjWjhTRaQLEqXCwh8jshYtg"
-];
-
-// Use the environment variable as the default. 
-// If this is not set, the app will prompt the user to enter a key via the UI.
-const DEFAULT_API_KEY = process.env.API_KEY || "";
+// Restoring the default API Key.
+// This allows the app to attempt to connect without user configuration.
+// If this key hits rate limits, the app will handle the 429 error and prompt the user.
+const DEFAULT_API_KEY = "AIzaSyAl2v_WEWEcOjWjhTRaQLEqXCwh8jshYtg";
 
 // Helper to initialize the client only when needed
 const getClient = () => {
@@ -20,16 +16,19 @@ const getClient = () => {
     apiKey = (import.meta as any).env?.VITE_API_KEY;
   }
 
-  // 3. Use Default (process.env.API_KEY)
+  // 3. Check process.env (Fallback)
   if (!apiKey) {
-    apiKey = DEFAULT_API_KEY;
+    // Safety check for process.env access in browser
+    try {
+      apiKey = process.env.API_KEY;
+    } catch (e) {
+      // Ignore process is not defined
+    }
   }
 
-  // 4. Blacklist Check: Ensure we don't use a known dead key
-  if (apiKey && EXHAUSTED_KEYS.includes(apiKey)) {
-    console.warn("Blocked usage of exhausted API key. Clearing storage.");
-    localStorage.removeItem('gemini_api_key');
-    apiKey = ""; // Reset to empty to trigger MISSING error
+  // 4. Use Default (Hardcoded fallback)
+  if (!apiKey) {
+    apiKey = DEFAULT_API_KEY;
   }
   
   if (!apiKey) {
@@ -43,8 +42,11 @@ export const saveApiKey = (key: string) => {
 };
 
 export const hasApiKey = () => {
-   const key = localStorage.getItem('gemini_api_key') || (import.meta as any).env?.VITE_API_KEY || DEFAULT_API_KEY;
-   return !!key && !EXHAUSTED_KEYS.includes(key);
+   // Check all sources including the hardcoded default
+   const key = localStorage.getItem('gemini_api_key') || 
+               (import.meta as any).env?.VITE_API_KEY || 
+               DEFAULT_API_KEY;
+   return !!key;
 };
 
 // Retry helper for 429 errors
@@ -71,14 +73,13 @@ export const sendMessageStream = async (
   onChunk: (text: string) => void
 ) => {
   try {
-    // We can't easily retry the stream once it starts, but we can retry the initial connection
     await retryOp(async () => {
         const ai = getClient();
         const chat = ai.chats.create({
           model: GEMINI_MODEL,
           config: {
             systemInstruction: SYSTEM_INSTRUCTION,
-            temperature: 0.7, // Balanced creativity and precision
+            temperature: 0.7, 
           },
           history: history,
         });
@@ -105,7 +106,7 @@ export const analyzeLog = async (logContent: string) => {
           model: GEMINI_MODEL,
           config: {
             systemInstruction: SYSTEM_INSTRUCTION,
-            temperature: 0.2, // Low temperature for analytical precision
+            temperature: 0.2, 
           },
           contents: `Analyze the following log excerpt for anomalies, potential threats (based on MITRE ATT&CK), and suggest mitigation steps. Format the output with clear headers and a severity rating.\n\nLOG DATA:\n\`\`\`\n${logContent}\n\`\`\``,
         });
