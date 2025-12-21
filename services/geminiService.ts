@@ -1,9 +1,13 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { SYSTEM_INSTRUCTION, GEMINI_MODEL } from '../constants';
 
+// Known exhausted keys that should be rejected to prevent 429 loops
+const EXHAUSTED_KEYS = [
+  "AIzaSyAl2v_WEWEcOjWjhTRaQLEqXCwh8jshYtg"
+];
+
 // Use the environment variable as the default. 
 // If this is not set, the app will prompt the user to enter a key via the UI.
-// This prevents Rate Limit (429) errors from shared hardcoded keys.
 const DEFAULT_API_KEY = process.env.API_KEY || "";
 
 // Helper to initialize the client only when needed
@@ -20,6 +24,13 @@ const getClient = () => {
   if (!apiKey) {
     apiKey = DEFAULT_API_KEY;
   }
+
+  // 4. Blacklist Check: Ensure we don't use a known dead key
+  if (apiKey && EXHAUSTED_KEYS.includes(apiKey)) {
+    console.warn("Blocked usage of exhausted API key. Clearing storage.");
+    localStorage.removeItem('gemini_api_key');
+    apiKey = ""; // Reset to empty to trigger MISSING error
+  }
   
   if (!apiKey) {
     throw new Error("API_KEY_MISSING");
@@ -32,7 +43,8 @@ export const saveApiKey = (key: string) => {
 };
 
 export const hasApiKey = () => {
-   return !!(localStorage.getItem('gemini_api_key') || (import.meta as any).env?.VITE_API_KEY || DEFAULT_API_KEY);
+   const key = localStorage.getItem('gemini_api_key') || (import.meta as any).env?.VITE_API_KEY || DEFAULT_API_KEY;
+   return !!key && !EXHAUSTED_KEYS.includes(key);
 };
 
 // Retry helper for 429 errors

@@ -102,7 +102,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onOpenApiKeyModal }) => {
       // Attempt to clean up JSON error dumps from the API
       if (typeof cleanError === 'string' && (cleanError.includes('{') || cleanError.includes('Quota exceeded'))) {
          if (cleanError.includes('429') || cleanError.toLowerCase().includes('quota') || cleanError.includes('RESOURCE_EXHAUSTED')) {
-            cleanError = "⚠️ **System Overload (Rate Limit 429)**\n\nThe AI model is currently experiencing heavy traffic or the key quota is exhausted.";
+            cleanError = "⚠️ **Quota Limit Reached**\n\nThe current API Key has exhausted its free tier quota. Please update your key in the settings to continue.";
          } else {
              try {
                 const jsonMatch = cleanError.match(/{.*}/s);
@@ -117,7 +117,7 @@ const ChatView: React.FC<ChatViewProps> = ({ onOpenApiKeyModal }) => {
       }
 
       const errorMessage = isMissingKey 
-        ? "**Configuration Required**\n\nGoogle Gemini API Key is missing. The configuration window has been opened for you to enter your key." 
+        ? "**Configuration Required**\n\nA Google Gemini API Key is required to proceed. The configuration window has been opened." 
         : `**System Error:** ${cleanError}`;
 
       setMessages(prev => prev.map(m => 
