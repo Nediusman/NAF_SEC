@@ -3,11 +3,7 @@ import { FileSearch, AlertTriangle, CheckCircle, Upload } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { analyzeLog } from '../services/geminiService';
 
-interface LogAnalyzerViewProps {
-  onOpenApiKeyModal: () => void;
-}
-
-const LogAnalyzerView: React.FC<LogAnalyzerViewProps> = ({ onOpenApiKeyModal }) => {
+const LogAnalyzerView: React.FC = () => {
   const [logInput, setLogInput] = useState('');
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -20,12 +16,7 @@ const LogAnalyzerView: React.FC<LogAnalyzerViewProps> = ({ onOpenApiKeyModal }) 
       const result = await analyzeLog(logInput);
       setAnalysisResult(result || "No analysis returned.");
     } catch (error: any) {
-      if (error.message === 'API_KEY_MISSING' || error.message?.includes('429')) {
-        onOpenApiKeyModal();
-        setAnalysisResult("**Error:** API Key missing or quota exceeded. The configuration window has been opened.");
-      } else {
-        setAnalysisResult(`**Error:** ${error.message || "Failed to analyze logs."}`);
-      }
+      setAnalysisResult(`**Error:** ${error.message || "Failed to analyze logs."}`);
     } finally {
       setLoading(false);
     }

@@ -1,49 +1,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { SYSTEM_INSTRUCTION, GEMINI_MODEL } from '../constants';
 
-// Helper to initialize the client only when needed
-const getClient = () => {
-  // 1. Check LocalStorage first (User preference/override)
-  let apiKey = localStorage.getItem('gemini_api_key');
-
-  // 2. Check Vite Env Var (Specific to Vite setups)
-  if (!apiKey || apiKey === 'undefined') {
-    apiKey = (import.meta as any).env?.VITE_API_KEY;
-  }
-
-  // 3. Check process.env (Standard Injection)
-  if (!apiKey) {
-    try {
-      // @ts-ignore
-      apiKey = process.env.API_KEY;
-    } catch (e) {
-      // Ignore process is not defined
-    }
-  }
-
-  if (!apiKey) {
-    throw new Error("API_KEY_MISSING");
-  }
-  return new GoogleGenAI({ apiKey });
-};
-
-export const saveApiKey = (key: string) => {
-  localStorage.setItem('gemini_api_key', key);
-};
-
-export const hasApiKey = () => {
-   let key = localStorage.getItem('gemini_api_key') || 
-               (import.meta as any).env?.VITE_API_KEY;
-   
-   if (!key) {
-     try {
-       // @ts-ignore
-       key = process.env.API_KEY;
-     } catch (e) {}
-   }
-   
-   return !!key;
-};
+// Initialize the client with the API key from the environment variable
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 // Retry helper for 429 errors
 const retryOp = async <T>(operation: () => Promise<T>, retries = 3, delay = 2000): Promise<T> => {
@@ -70,7 +29,6 @@ export const sendMessageStream = async (
 ) => {
   try {
     await retryOp(async () => {
-        const ai = getClient();
         const chat = ai.chats.create({
           model: GEMINI_MODEL,
           config: {
@@ -97,7 +55,6 @@ export const sendMessageStream = async (
 export const analyzeLog = async (logContent: string) => {
   try {
     return await retryOp(async () => {
-        const ai = getClient();
         const response = await ai.models.generateContent({
           model: GEMINI_MODEL,
           config: {
@@ -117,7 +74,6 @@ export const analyzeLog = async (logContent: string) => {
 export const generateQuiz = async (topic: string) => {
   try {
     return await retryOp(async () => {
-        const ai = getClient();
         const response = await ai.models.generateContent({
           model: GEMINI_MODEL,
           config: {

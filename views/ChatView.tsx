@@ -5,11 +5,7 @@ import ChatMessage from '../components/ChatMessage';
 import { sendMessageStream } from '../services/geminiService';
 import { INITIAL_GREETING } from '../constants';
 
-interface ChatViewProps {
-  onOpenApiKeyModal: () => void;
-}
-
-const ChatView: React.FC<ChatViewProps> = ({ onOpenApiKeyModal }) => {
+const ChatView: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'init',
@@ -90,19 +86,12 @@ const ChatView: React.FC<ChatViewProps> = ({ onOpenApiKeyModal }) => {
       ));
 
     } catch (error: any) {
-      const isMissingKey = error.message === 'API_KEY_MISSING';
       let cleanError = error.message || "Unknown connection error";
-      let triggerModal = false;
-
-      // Check for Rate Limit or Missing Key
-      if (isMissingKey || cleanError.includes('429') || cleanError.toLowerCase().includes('quota') || cleanError.includes('RESOURCE_EXHAUSTED')) {
-         triggerModal = true;
-      }
       
       // Attempt to clean up JSON error dumps from the API
       if (typeof cleanError === 'string' && (cleanError.includes('{') || cleanError.includes('Quota exceeded'))) {
          if (cleanError.includes('429') || cleanError.toLowerCase().includes('quota') || cleanError.includes('RESOURCE_EXHAUSTED')) {
-            cleanError = "⚠️ **Quota Limit Reached**\n\nThe current API Key has exhausted its free tier quota. Please update your key in the settings to continue.";
+            cleanError = "⚠️ **Quota Limit Reached**\n\nThe current API Key has exhausted its free tier quota.";
          } else {
              try {
                 const jsonMatch = cleanError.match(/{.*}/s);
@@ -116,20 +105,13 @@ const ChatView: React.FC<ChatViewProps> = ({ onOpenApiKeyModal }) => {
          }
       }
 
-      const errorMessage = isMissingKey 
-        ? "**Configuration Required**\n\nA Google Gemini API Key is required to proceed. The configuration window has been opened." 
-        : `**System Error:** ${cleanError}`;
+      const errorMessage = `**System Error:** ${cleanError}`;
 
       setMessages(prev => prev.map(m => 
         m.id === aiMsgId 
           ? { ...m, content: errorMessage, isStreaming: false } 
           : m
       ));
-
-      if (triggerModal) {
-        // Trigger modal opening slightly after message renders
-        setTimeout(() => onOpenApiKeyModal(), 500);
-      }
 
     } finally {
       setIsProcessing(false);

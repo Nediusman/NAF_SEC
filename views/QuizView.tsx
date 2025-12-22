@@ -3,11 +3,7 @@ import { BrainCircuit, Check, X, RefreshCw, ChevronRight } from 'lucide-react';
 import { generateQuiz } from '../services/geminiService';
 import { QuizState } from '../types';
 
-interface QuizViewProps {
-  onOpenApiKeyModal: () => void;
-}
-
-const QuizView: React.FC<QuizViewProps> = ({ onOpenApiKeyModal }) => {
+const QuizView: React.FC = () => {
   const [topic, setTopic] = useState('');
   const [loading, setLoading] = useState(false);
   const [quizState, setQuizState] = useState<QuizState>({
@@ -35,12 +31,7 @@ const QuizView: React.FC<QuizViewProps> = ({ onOpenApiKeyModal }) => {
         });
       }
     } catch (e: any) {
-      if (e.message === 'API_KEY_MISSING' || e.message?.includes('429')) {
-         onOpenApiKeyModal();
-         alert("API Key missing or quota exceeded. Please configure your key in the popup.");
-      } else {
-         alert(`Failed to generate quiz: ${e.message}`);
-      }
+       alert(`Failed to generate quiz: ${e.message}`);
     } finally {
       setLoading(false);
     }
