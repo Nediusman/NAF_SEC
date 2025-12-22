@@ -1,8 +1,17 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { SYSTEM_INSTRUCTION, GEMINI_MODEL } from '../constants';
 
-// Initialize the client with the API key from the environment variable
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Retrieve the API key processed by Vite
+const apiKey = process.env.API_KEY;
+
+// Log error if missing (visible in browser console)
+if (!apiKey) {
+  console.error("CRITICAL: Gemini API Key is missing. Please set the 'API_KEY' environment variable in your deployment settings.");
+}
+
+// Initialize the client. Pass a placeholder if missing to prevent immediate constructor crash,
+// allowing the app to load and show error messages when requests are attempted.
+const ai = new GoogleGenAI({ apiKey: apiKey || "MISSING_API_KEY" });
 
 // Retry helper for 429 errors
 const retryOp = async <T>(operation: () => Promise<T>, retries = 3, delay = 2000): Promise<T> => {
@@ -28,6 +37,8 @@ export const sendMessageStream = async (
   onChunk: (text: string) => void
 ) => {
   try {
+    if (!apiKey) throw new Error("API Key not configured. Application cannot contact Gemini.");
+
     await retryOp(async () => {
         const chat = ai.chats.create({
           model: GEMINI_MODEL,
@@ -54,6 +65,8 @@ export const sendMessageStream = async (
 
 export const analyzeLog = async (logContent: string) => {
   try {
+    if (!apiKey) throw new Error("API Key not configured.");
+
     return await retryOp(async () => {
         const response = await ai.models.generateContent({
           model: GEMINI_MODEL,
@@ -73,6 +86,8 @@ export const analyzeLog = async (logContent: string) => {
 
 export const generateQuiz = async (topic: string) => {
   try {
+    if (!apiKey) throw new Error("API Key not configured.");
+
     return await retryOp(async () => {
         const response = await ai.models.generateContent({
           model: GEMINI_MODEL,
