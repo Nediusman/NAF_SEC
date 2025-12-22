@@ -4,24 +4,23 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory.
-  // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
   const env = loadEnv(mode, '.', '');
 
-  // Vercel and other providers inject env vars into process.env.
-  // We check both the loaded .env content and the actual process environment.
-  // Fallback to the hardcoded key if no environment variable is present.
-  const apiKey = env.API_KEY || process.env.API_KEY || 'AIzaSyAl2v_WEWEcOjWjhTRaQLEqXCwh8jshYtg';
+  // Resolution Order:
+  // 1. VITE_API_KEY (Standard Vite Env Var)
+  // 2. API_KEY (Vercel Server Env Var available at build time)
+  // 3. process.env.API_KEY (Node process fallback)
+  // 4. Hardcoded Fallback
+  const apiKey = env.VITE_API_KEY || env.API_KEY || process.env.API_KEY || 'AIzaSyAl2v_WEWEcOjWjhTRaQLEqXCwh8jshYtg';
 
   return {
     plugins: [react()],
     define: {
-      // Expose the API_KEY environment variable to the client code.
-      // We JSON.stringify the value to ensure it's treated as a string literal in the client.
-      // Fallback to empty string prevents 'undefined' reference errors.
+      // Safely expose the key to client-side code
       'process.env.API_KEY': JSON.stringify(apiKey),
       
-      // Safety polyfill to prevent "ReferenceError: process is not defined"
-      // if any code inadvertently accesses process.env without a specific key.
+      // Polyfill process.env to avoid "process is not defined" errors in browser
+      // We do this AFTER the specific replacement above is registered by Vite
       'process.env': JSON.stringify({}),
     },
   };

@@ -64,7 +64,7 @@ const App: React.FC = () => {
             <div className="flex items-center gap-2 mb-1 text-red-500 font-bold">
               <Activity size={12} /> MODE: UNRESTRICTED
             </div>
-            <p>Gemini-3.0-Pro // ROOT</p>
+            <p>Gemini-2.5-Flash // ROOT</p>
           </div>
         </div>
       </aside>

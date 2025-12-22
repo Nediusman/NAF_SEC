@@ -1,20 +1,16 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { SYSTEM_INSTRUCTION, GEMINI_MODEL } from '../constants';
 
-// Retrieve the API key processed by Vite
-const apiKey = process.env.API_KEY;
+// Retrieve the API key. 
+// Vite's define plugin replaces process.env.API_KEY with the actual string value during build.
+const apiKey = process.env.API_KEY || "AIzaSyAl2v_WEWEcOjWjhTRaQLEqXCwh8jshYtg";
 
-// Log error if missing (visible in browser console)
-if (!apiKey) {
-  console.error("CRITICAL: Gemini API Key is missing. Please set the 'API_KEY' environment variable in your deployment settings.");
-}
+// Initialize the client.
+const ai = new GoogleGenAI({ apiKey: apiKey });
 
-// Initialize the client. Pass a placeholder if missing to prevent immediate constructor crash,
-// allowing the app to load and show error messages when requests are attempted.
-const ai = new GoogleGenAI({ apiKey: apiKey || "MISSING_API_KEY" });
-
-// Retry helper for 429 errors
-const retryOp = async <T>(operation: () => Promise<T>, retries = 3, delay = 2000): Promise<T> => {
+// Enhanced Retry helper for 429 errors to provide "unlimited" feel
+// Uses exponential backoff with jitter
+const retryOp = async <T>(operation: () => Promise<T>, retries = 5, initialDelay = 1000): Promise<T> => {
   try {
     return await operation();
   } catch (error: any) {
@@ -23,9 +19,11 @@ const retryOp = async <T>(operation: () => Promise<T>, retries = 3, delay = 2000
                         error.message?.includes('RESOURCE_EXHAUSTED');
     
     if (retries > 0 && isRateLimit) {
-      console.warn(`Rate limit hit. Retrying in ${delay}ms... (${retries} attempts left)`);
+      // Add jitter to prevent thundering herd
+      const delay = initialDelay * Math.pow(2, 5 - retries) + (Math.random() * 500);
+      console.warn(`Quota limit hit. Retrying in ${Math.round(delay)}ms... (${retries} attempts left)`);
       await new Promise(resolve => setTimeout(resolve, delay));
-      return retryOp(operation, retries - 1, delay * 2);
+      return retryOp(operation, retries - 1, initialDelay);
     }
     throw error;
   }
@@ -37,8 +35,6 @@ export const sendMessageStream = async (
   onChunk: (text: string) => void
 ) => {
   try {
-    if (!apiKey) throw new Error("API Key not configured. Application cannot contact Gemini.");
-
     await retryOp(async () => {
         const chat = ai.chats.create({
           model: GEMINI_MODEL,
@@ -65,8 +61,6 @@ export const sendMessageStream = async (
 
 export const analyzeLog = async (logContent: string) => {
   try {
-    if (!apiKey) throw new Error("API Key not configured.");
-
     return await retryOp(async () => {
         const response = await ai.models.generateContent({
           model: GEMINI_MODEL,
@@ -86,8 +80,6 @@ export const analyzeLog = async (logContent: string) => {
 
 export const generateQuiz = async (topic: string) => {
   try {
-    if (!apiKey) throw new Error("API Key not configured.");
-
     return await retryOp(async () => {
         const response = await ai.models.generateContent({
           model: GEMINI_MODEL,

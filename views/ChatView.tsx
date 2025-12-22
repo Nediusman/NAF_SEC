@@ -5,15 +5,34 @@ import ChatMessage from '../components/ChatMessage';
 import { sendMessageStream } from '../services/geminiService';
 import { INITIAL_GREETING } from '../constants';
 
+const STORAGE_KEY = 'naf_sec_chat_history';
+
 const ChatView: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
+  // Initialize state from local storage if available
+  const [messages, setMessages] = useState<Message[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Rehydrate timestamp strings back to Date objects
+        return parsed.map((m: any) => ({
+          ...m,
+          timestamp: new Date(m.timestamp)
+        }));
+      }
+    } catch (error) {
+      console.warn("Failed to load chat history:", error);
+    }
+    
+    // Default start state
+    return [{
       id: 'init',
       sender: Sender.AI,
       content: INITIAL_GREETING,
       timestamp: new Date()
-    }
-  ]);
+    }];
+  });
+
   const [inputValue, setInputValue] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -22,11 +41,18 @@ const ChatView: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Scroll on new messages
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
+  // Save history to local storage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+  }, [messages]);
+
   const handleClear = () => {
+    // Reset to initial state
     setMessages([{
       id: Date.now().toString(),
       sender: Sender.AI,
