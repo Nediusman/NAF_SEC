@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Terminal, Shield, FileSearch, BrainCircuit, Activity, BookOpen, Skull } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Terminal, Shield, FileSearch, BrainCircuit, Activity, BookOpen, Skull, Settings, Key, X, Check, Save } from 'lucide-react';
 import ChatView from './views/ChatView';
 import LogAnalyzerView from './views/LogAnalyzerView';
 import QuizView from './views/QuizView';
@@ -7,7 +7,35 @@ import CheatSheetView from './views/CheatSheetView';
 import { AppView } from './types';
 
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<AppView>(AppView.CHAT);
+  const [currentView, setCurrentView] = useState<AppView>(() => {
+    // Restore last active view from storage
+    const savedView = localStorage.getItem('naf_sec_current_view');
+    return (savedView as AppView) || AppView.CHAT;
+  });
+  
+  const [showSettings, setShowSettings] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+  const [savedKey, setSavedKey] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('naf_sec_api_key');
+    if (stored) setApiKey(stored);
+  }, []);
+
+  // Persist current view on change
+  useEffect(() => {
+    localStorage.setItem('naf_sec_current_view', currentView);
+  }, [currentView]);
+
+  const handleSaveKey = () => {
+    if (apiKey.trim()) {
+      localStorage.setItem('naf_sec_api_key', apiKey.trim());
+      setSavedKey(true);
+      setTimeout(() => setSavedKey(false), 2000);
+    } else {
+      localStorage.removeItem('naf_sec_api_key');
+    }
+  };
 
   const renderView = () => {
     switch (currentView) {
@@ -59,8 +87,16 @@ const App: React.FC = () => {
           </nav>
         </div>
 
-        <div className="p-4 border-t border-slate-800 hidden md:block">
-          <div className="bg-slate-950/50 rounded p-3 text-xs text-slate-500 border border-slate-800">
+        <div className="p-4 border-t border-slate-800">
+          <button
+            onClick={() => setShowSettings(true)}
+            className="w-full flex items-center gap-3 p-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+          >
+            <Settings size={20} />
+            <span className="hidden md:block font-medium text-sm">Config / API</span>
+          </button>
+          
+          <div className="mt-4 bg-slate-950/50 rounded p-3 text-xs text-slate-500 border border-slate-800 hidden md:block">
             <div className="flex items-center gap-2 mb-1 text-red-500 font-bold">
               <Activity size={12} /> MODE: UNRESTRICTED
             </div>
@@ -91,6 +127,63 @@ const App: React.FC = () => {
           {renderView()}
         </div>
       </main>
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md bg-slate-900 border border-red-900/50 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/50">
+              <h3 className="font-bold text-slate-100 flex items-center gap-2">
+                <Key className="text-red-500" size={18} />
+                SYSTEM CONFIGURATION
+              </h3>
+              <button 
+                onClick={() => setShowSettings(false)}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-mono text-slate-400 uppercase tracking-wider mb-2">
+                  Gemini API Key Override
+                </label>
+                <div className="relative">
+                  <input
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder="AIzaSy..."
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg py-3 pl-10 pr-4 text-sm text-slate-200 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 font-mono transition-all"
+                  />
+                  <Key className="absolute left-3 top-3 text-slate-600" size={16} />
+                </div>
+                <p className="mt-2 text-xs text-slate-500">
+                  Enter your personal API key to bypass shared quota limits. 
+                  Keys are stored locally in your browser.
+                  <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline ml-1">
+                    Get a key here.
+                  </a>
+                </p>
+              </div>
+
+              <button
+                onClick={handleSaveKey}
+                className={`w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-all ${
+                  savedKey 
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-red-600 hover:bg-red-500 text-white shadow-[0_0_15px_rgba(220,38,38,0.4)]'
+                }`}
+              >
+                {savedKey ? <Check size={18} /> : <Save size={18} />}
+                {savedKey ? 'CONFIGURATION SAVED' : 'SAVE CONFIGURATION'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -115,9 +115,9 @@ const ChatView: React.FC = () => {
       let cleanError = error.message || "Unknown connection error";
       
       // Attempt to clean up JSON error dumps from the API
-      if (typeof cleanError === 'string' && (cleanError.includes('{') || cleanError.includes('Quota exceeded'))) {
+      if (typeof cleanError === 'string') {
          if (cleanError.includes('429') || cleanError.toLowerCase().includes('quota') || cleanError.includes('RESOURCE_EXHAUSTED')) {
-            cleanError = "⚠️ **Quota Limit Reached**\n\nThe current API Key has exhausted its free tier quota.";
+            cleanError = "⚠️ **Quota Limit Reached**\n\nThe shared API Key has been exhausted. \n\n**FIX:** Click the **Settings/Config** button in the sidebar and enter your own free Google Gemini API Key for unlimited access.";
          } else {
              try {
                 const jsonMatch = cleanError.match(/{.*}/s);

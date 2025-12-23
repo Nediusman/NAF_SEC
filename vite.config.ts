@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
   // 2. API_KEY (Vercel Server Env Var available at build time)
   // 3. process.env.API_KEY (Node process fallback)
   // 4. Hardcoded Fallback
-  const apiKey = env.VITE_API_KEY || env.API_KEY || process.env.API_KEY || 'AIzaSyAl2v_WEWEcOjWjhTRaQLEqXCwh8jshYtg';
+  const apiKey = env.VITE_API_KEY || env.API_KEY || process.env.API_KEY || 'AIzaSyDAh_JZOPwNG8cQw4ATw2gh68z5OhNJIko';
 
   return {
     plugins: [react()],

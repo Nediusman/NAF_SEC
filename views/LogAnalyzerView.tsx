@@ -1,12 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileSearch, AlertTriangle, CheckCircle, Upload } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { analyzeLog } from '../services/geminiService';
 
+const STORAGE_KEY = 'naf_sec_log_data';
+
 const LogAnalyzerView: React.FC = () => {
-  const [logInput, setLogInput] = useState('');
-  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
+  // Lazy initialize state from local storage
+  const [logInput, setLogInput] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved).logInput : '';
+    } catch {
+      return '';
+    }
+  });
+
+  const [analysisResult, setAnalysisResult] = useState<string | null>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved).analysisResult : null;
+    } catch {
+      return null;
+    }
+  });
+
   const [loading, setLoading] = useState(false);
+
+  // Persist state changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ logInput, analysisResult }));
+  }, [logInput, analysisResult]);
 
   const handleAnalyze = async () => {
     if (!logInput.trim()) return;
@@ -42,7 +66,10 @@ const LogAnalyzerView: React.FC = () => {
               <span className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Raw Log Data</span>
               <button 
                 className="text-xs text-cyan-400 hover:text-cyan-300"
-                onClick={() => setLogInput('')}
+                onClick={() => {
+                  setLogInput('');
+                  setAnalysisResult(null);
+                }}
               >
                 Clear
               </button>

@@ -1,19 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrainCircuit, Check, X, RefreshCw, ChevronRight } from 'lucide-react';
 import { generateQuiz } from '../services/geminiService';
 import { QuizState } from '../types';
 
+const STORAGE_KEY = 'naf_sec_quiz_state';
+
 const QuizView: React.FC = () => {
-  const [topic, setTopic] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [quizState, setQuizState] = useState<QuizState>({
-    questions: [],
-    currentQuestionIndex: 0,
-    score: 0,
-    isActive: false,
-    isFinished: false,
-    selectedAnswer: null
+  // Lazy init from local storage
+  const [topic, setTopic] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved).topic : '';
+    } catch {
+      return '';
+    }
   });
+
+  const [quizState, setQuizState] = useState<QuizState>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        return JSON.parse(saved).quizState;
+      }
+    } catch (e) {
+      console.warn("Failed to load quiz state", e);
+    }
+    
+    // Default initial state
+    return {
+      questions: [],
+      currentQuestionIndex: 0,
+      score: 0,
+      isActive: false,
+      isFinished: false,
+      selectedAnswer: null
+    };
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  // Persist state
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ topic, quizState }));
+  }, [topic, quizState]);
 
   const startQuiz = async () => {
     if (!topic.trim()) return;

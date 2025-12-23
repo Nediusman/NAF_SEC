@@ -1,16 +1,17 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { SYSTEM_INSTRUCTION, GEMINI_MODEL } from '../constants';
 
-// Retrieve the API key. 
-// Vite's define plugin replaces process.env.API_KEY with the actual string value during build.
-const apiKey = process.env.API_KEY || "AIzaSyAl2v_WEWEcOjWjhTRaQLEqXCwh8jshYtg";
+// Helper to get the most current client instance
+// This allows the app to switch keys without refreshing the page
+const getGenAI = () => {
+  const userKey = localStorage.getItem('naf_sec_api_key');
+  // Prioritize User Key > Env Key > Fallback
+  const keyToUse = userKey || process.env.API_KEY || "AIzaSyDAh_JZOPwNG8cQw4ATw2gh68z5OhNJIko";
+  return new GoogleGenAI({ apiKey: keyToUse });
+};
 
-// Initialize the client.
-const ai = new GoogleGenAI({ apiKey: apiKey });
-
-// Enhanced Retry helper for 429 errors to provide "unlimited" feel
-// Uses exponential backoff with jitter
-const retryOp = async <T>(operation: () => Promise<T>, retries = 5, initialDelay = 1000): Promise<T> => {
+// Enhanced Retry helper for 429 errors
+const retryOp = async <T>(operation: () => Promise<T>, retries = 3, initialDelay = 2000): Promise<T> => {
   try {
     return await operation();
   } catch (error: any) {
@@ -19,11 +20,10 @@ const retryOp = async <T>(operation: () => Promise<T>, retries = 5, initialDelay
                         error.message?.includes('RESOURCE_EXHAUSTED');
     
     if (retries > 0 && isRateLimit) {
-      // Add jitter to prevent thundering herd
-      const delay = initialDelay * Math.pow(2, 5 - retries) + (Math.random() * 500);
-      console.warn(`Quota limit hit. Retrying in ${Math.round(delay)}ms... (${retries} attempts left)`);
+      const delay = initialDelay * Math.pow(2, 3 - retries); // Exponential backoff
+      console.warn(`Quota hit. Retrying in ${delay}ms...`);
       await new Promise(resolve => setTimeout(resolve, delay));
-      return retryOp(operation, retries - 1, initialDelay);
+      return retryOp(operation, retries - 1, initialDelay * 1.5);
     }
     throw error;
   }
@@ -36,6 +36,7 @@ export const sendMessageStream = async (
 ) => {
   try {
     await retryOp(async () => {
+        const ai = getGenAI();
         const chat = ai.chats.create({
           model: GEMINI_MODEL,
           config: {
@@ -62,6 +63,7 @@ export const sendMessageStream = async (
 export const analyzeLog = async (logContent: string) => {
   try {
     return await retryOp(async () => {
+        const ai = getGenAI();
         const response = await ai.models.generateContent({
           model: GEMINI_MODEL,
           config: {
@@ -81,6 +83,7 @@ export const analyzeLog = async (logContent: string) => {
 export const generateQuiz = async (topic: string) => {
   try {
     return await retryOp(async () => {
+        const ai = getGenAI();
         const response = await ai.models.generateContent({
           model: GEMINI_MODEL,
           config: {
