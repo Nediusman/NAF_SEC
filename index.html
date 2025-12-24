@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>NAF_SEC_AI</title>
     <!-- Keeping Tailwind CDN for simplicity without extra config files, 
          though in a large Vercel project you might install it via npm -->
@@ -10,36 +10,55 @@
     <style>
       @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
       
-      /* KEY FIX: Force full height and prevent body scroll to maintain app layout stability */
-      html, body, #root {
+      /* KEY FIX: Lock the viewport completely. */
+      html {
         height: 100%;
         width: 100%;
-        margin: 0;
-        padding: 0;
         overflow: hidden;
+        overscroll-behavior: none; /* Prevents rubber-banding on Mac/iOS */
       }
 
       body {
+        position: fixed; /* Nuclear option: Pins body to viewport */
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
         font-family: 'Inter', sans-serif;
         background-color: #0f172a; /* slate-950 */
         color: #e2e8f0; /* slate-200 */
+        overscroll-behavior: none;
+        touch-action: manipulation;
       }
+
+      #root {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
       code, pre, .font-mono {
         font-family: 'JetBrains Mono', monospace;
       }
+      
+      /* Custom Scrollbar */
       ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+        width: 6px;
+        height: 6px;
       }
       ::-webkit-scrollbar-track {
-        background: #1e293b; 
+        background: transparent; 
       }
       ::-webkit-scrollbar-thumb {
-        background: #475569; 
-        border-radius: 4px;
+        background: #334155; 
+        border-radius: 3px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #64748b; 
+        background: #475569; 
       }
     </style>
 <script type="importmap">

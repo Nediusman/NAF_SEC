@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { Send, Trash2, StopCircle } from 'lucide-react';
 import { Message, Sender } from '../types';
 import ChatMessage from '../components/ChatMessage';
@@ -8,13 +8,11 @@ import { INITIAL_GREETING } from '../constants';
 const STORAGE_KEY = 'naf_sec_chat_history';
 
 const ChatView: React.FC = () => {
-  // Initialize state from local storage if available
   const [messages, setMessages] = useState<Message[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Rehydrate timestamp strings back to Date objects
         return parsed.map((m: any) => ({
           ...m,
           timestamp: new Date(m.timestamp)
@@ -23,8 +21,6 @@ const ChatView: React.FC = () => {
     } catch (error) {
       console.warn("Failed to load chat history:", error);
     }
-    
-    // Default start state
     return [{
       id: 'init',
       sender: Sender.AI,
@@ -36,23 +32,35 @@ const ChatView: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // Robust scrolling logic
+  const scrollToBottom = (instant = false) => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ 
+        behavior: instant ? 'auto' : 'smooth', 
+        block: 'end' 
+      });
+    }
   };
+
+  // Scroll on mount (instant)
+  useLayoutEffect(() => {
+    scrollToBottom(true);
+  }, []);
 
   // Scroll on new messages
   useEffect(() => {
+    // Only scroll if we are streaming OR if it's a new user message
+    // This prevents jumping if the user is scrolling up reading history
     scrollToBottom();
-  }, [messages]);
+  }, [messages.length, isProcessing]);
 
-  // Save history to local storage whenever it changes
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
   }, [messages]);
 
   const handleClear = () => {
-    // Reset to initial state
     setMessages([{
       id: Date.now().toString(),
       sender: Sender.AI,
@@ -76,7 +84,6 @@ const ChatView: React.FC = () => {
     setInputValue('');
     setIsProcessing(true);
 
-    // Prepare history for API
     const history = messages.map(m => ({
       role: m.sender === Sender.USER ? 'user' : 'model',
       parts: [{ text: m.content }]
@@ -104,7 +111,6 @@ const ChatView: React.FC = () => {
         ));
       });
       
-      // Finalize message
       setMessages(prev => prev.map(m => 
         m.id === aiMsgId 
           ? { ...m, isStreaming: false } 
@@ -113,8 +119,6 @@ const ChatView: React.FC = () => {
 
     } catch (error: any) {
       let cleanError = error.message || "Unknown connection error";
-      
-      // Attempt to clean up JSON error dumps from the API
       if (typeof cleanError === 'string') {
          if (cleanError.includes('429') || cleanError.toLowerCase().includes('quota') || cleanError.includes('RESOURCE_EXHAUSTED')) {
             cleanError = "⚠️ **Quota Limit Reached**\n\nThe shared API Key has been exhausted. \n\n**FIX:** Click the **Settings/Config** button in the sidebar and enter your own free Google Gemini API Key for unlimited access.";
@@ -125,30 +129,27 @@ const ChatView: React.FC = () => {
                     const parsed = JSON.parse(jsonMatch[0]);
                     if (parsed.error?.message) cleanError = parsed.error.message;
                 }
-             } catch (e) {
-                 // Keep original if parse fails
-             }
+             } catch (e) {}
          }
       }
 
-      const errorMessage = `**System Error:** ${cleanError}`;
-
       setMessages(prev => prev.map(m => 
         m.id === aiMsgId 
-          ? { ...m, content: errorMessage, isStreaming: false } 
+          ? { ...m, content: `**System Error:** ${cleanError}`, isStreaming: false } 
           : m
       ));
-
     } finally {
       setIsProcessing(false);
     }
   };
 
   return (
-    // FIX: min-h-0 is critical for flex child scrolling
     <div className="flex flex-col h-full min-h-0 bg-slate-950/50">
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth min-h-0">
+      {/* Messages Area - Removed scroll-smooth from CSS to prevent fighting with JS scroll */}
+      <div 
+        ref={containerRef}
+        className="flex-1 overflow-y-auto p-4 md:p-6 min-h-0"
+      >
         <div className="max-w-4xl mx-auto">
           {messages.map(msg => (
             <ChatMessage key={msg.id} message={msg} />
@@ -158,7 +159,7 @@ const ChatView: React.FC = () => {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 border-t border-slate-800 bg-slate-900/80 backdrop-blur-sm flex-shrink-0">
+      <div className="p-4 border-t border-slate-800 bg-slate-900/80 backdrop-blur-sm flex-shrink-0 z-10">
         <div className="max-w-4xl mx-auto">
           <form onSubmit={handleSubmit} className="relative flex items-center gap-2">
             <button
@@ -174,7 +175,7 @@ const ChatView: React.FC = () => {
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Enter command or query (e.g., 'Explain SQL Injection', 'Generate Nmap script')..."
+              placeholder="Enter command or query..."
               className="flex-1 bg-slate-950 border border-slate-700 text-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all font-mono text-sm shadow-inner"
               disabled={isProcessing}
             />
