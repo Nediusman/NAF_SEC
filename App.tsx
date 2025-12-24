@@ -48,9 +48,11 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-200 overflow-hidden selection:bg-red-500/30">
+    // FIX: Use h-full w-full because #root is now 100% height. 
+    // This prevents 100vh scrollbar issues on mobile/desktop browsers.
+    <div className="flex h-full w-full bg-slate-950 text-slate-200 overflow-hidden selection:bg-red-500/30">
       {/* Sidebar Navigation */}
-      <aside className="w-16 md:w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between transition-all duration-300">
+      <aside className="w-16 md:w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between transition-all duration-300 flex-shrink-0">
         <div>
           <div className="h-16 flex items-center justify-center md:justify-start md:px-6 border-b border-slate-800">
             <Skull className="text-red-500 w-8 h-8" />
@@ -106,15 +108,16 @@ const App: React.FC = () => {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col relative">
-        <header className="h-16 bg-slate-900/50 border-b border-slate-800 flex items-center justify-between px-6 backdrop-blur-sm z-10">
-          <h2 className="font-mono text-sm text-red-400 font-bold tracking-widest uppercase">
+      {/* FIX: min-w-0 prevents flex items from overflowing horizontally */}
+      <main className="flex-1 flex flex-col relative min-w-0 h-full">
+        <header className="h-16 bg-slate-900/50 border-b border-slate-800 flex items-center justify-between px-6 backdrop-blur-sm z-10 flex-shrink-0">
+          <h2 className="font-mono text-sm text-red-400 font-bold tracking-widest uppercase truncate">
             {currentView === AppView.CHAT && "Interactive Root Shell // VANGUARD"}
             {currentView === AppView.LOG_ANALYZER && "Pattern Analysis & Detection"}
             {currentView === AppView.QUIZ && "Adversary Simulation Lab"}
             {currentView === AppView.CHEAT_SHEET && "Master Attack Library"}
           </h2>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-shrink-0">
              <div className="flex items-center gap-2 text-xs font-mono text-slate-500">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
               Live
@@ -122,7 +125,8 @@ const App: React.FC = () => {
           </div>
         </header>
         
-        <div className="flex-1 overflow-hidden relative">
+        {/* FIX: min-h-0 prevents flex items from overflowing vertically */}
+        <div className="flex-1 overflow-hidden relative min-h-0">
           <div className="absolute inset-0 bg-[linear-gradient(rgba(239,68,68,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(239,68,68,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
           {renderView()}
         </div>
@@ -130,7 +134,7 @@ const App: React.FC = () => {
 
       {/* Settings Modal */}
       {showSettings && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
           <div className="w-full max-w-md bg-slate-900 border border-red-900/50 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/50">
               <h3 className="font-bold text-slate-100 flex items-center gap-2">

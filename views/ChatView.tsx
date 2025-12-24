@@ -145,9 +145,10 @@ const ChatView: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-950/50">
+    // FIX: min-h-0 is critical for flex child scrolling
+    <div className="flex flex-col h-full min-h-0 bg-slate-950/50">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth min-h-0">
         <div className="max-w-4xl mx-auto">
           {messages.map(msg => (
             <ChatMessage key={msg.id} message={msg} />
@@ -157,7 +158,7 @@ const ChatView: React.FC = () => {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 border-t border-slate-800 bg-slate-900/80 backdrop-blur-sm">
+      <div className="p-4 border-t border-slate-800 bg-slate-900/80 backdrop-blur-sm flex-shrink-0">
         <div className="max-w-4xl mx-auto">
           <form onSubmit={handleSubmit} className="relative flex items-center gap-2">
             <button
