@@ -105,18 +105,27 @@ const ChatView: React.FC = () => {
 
     try {
       let accumulatedText = '';
+      let lastUpdate = 0;
+
       await sendMessageStream(history, userMsg.content, (textChunk) => {
         accumulatedText += textChunk;
-        setMessages(prev => prev.map(m => 
-          m.id === aiMsgId 
-            ? { ...m, content: accumulatedText } 
-            : m
-        ));
+        
+        // Throttling: Only update React state every 50ms to prevent UI freezing
+        const now = Date.now();
+        if (now - lastUpdate > 50) {
+          setMessages(prev => prev.map(m => 
+            m.id === aiMsgId 
+              ? { ...m, content: accumulatedText } 
+              : m
+          ));
+          lastUpdate = now;
+        }
       });
       
+      // Final update to ensure complete message is shown and streaming stops
       setMessages(prev => prev.map(m => 
         m.id === aiMsgId 
-          ? { ...m, isStreaming: false } 
+          ? { ...m, content: accumulatedText, isStreaming: false } 
           : m
       ));
 
@@ -149,9 +158,10 @@ const ChatView: React.FC = () => {
   return (
     <div className="flex flex-col h-full min-h-0 bg-slate-950/50">
       {/* Messages Area - Removed scroll-smooth from CSS to prevent fighting with JS scroll */}
+      {/* touch-pan-y allows vertical scrolling even if body has touch-action: none */}
       <div 
         ref={containerRef}
-        className="flex-1 overflow-y-auto p-4 md:p-6 min-h-0"
+        className="flex-1 overflow-y-auto p-4 md:p-6 min-h-0 touch-pan-y"
       >
         <div className="max-w-4xl mx-auto">
           {messages.map(msg => (
