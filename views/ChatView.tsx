@@ -51,13 +51,16 @@ const ChatView: React.FC = () => {
 
   // Scroll on new messages
   useEffect(() => {
-    // Only scroll if we are streaming OR if it's a new user message
-    // This prevents jumping if the user is scrolling up reading history
     scrollToBottom();
   }, [messages.length, isProcessing]);
 
+  // Optimize LocalStorage: Debounce saves to avoid blocking rendering during streaming
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    const timeoutId = setTimeout(() => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    }, 1000); // Wait for 1 second of inactivity before saving
+
+    return () => clearTimeout(timeoutId);
   }, [messages]);
 
   const handleClear = () => {

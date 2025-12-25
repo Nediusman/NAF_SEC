@@ -9,7 +9,7 @@ interface ChatMessageProps {
   message: Message;
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
+const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message }) => {
   const isUser = message.sender === Sender.USER;
 
   return (
@@ -91,6 +91,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
       </div>
     </div>
   );
-};
+});
 
 export default ChatMessage;
