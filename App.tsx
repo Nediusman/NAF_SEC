@@ -57,7 +57,7 @@ const App: React.FC = () => {
           <div className="h-16 flex items-center justify-center md:justify-start md:px-6 border-b border-slate-800">
             <Skull className="text-red-500 w-8 h-8" />
             <span className="hidden md:block ml-3 font-bold text-lg tracking-tight text-white">
-              NAF_SEC <span className="text-red-500 text-xs align-top">RED</span>
+              NAF_SEC <span className="text-emerald-400 text-xs align-top">AEGIS</span>
             </span>
           </div>
 
