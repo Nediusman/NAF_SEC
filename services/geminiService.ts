@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, HarmCategory, HarmBlockThreshold } from "@google/genai";
 import { SYSTEM_INSTRUCTION, GEMINI_MODEL } from '../constants';
 
 // Helper to get the most current client instance
@@ -9,6 +9,15 @@ const getGenAI = () => {
   const keyToUse = userKey || process.env.API_KEY || "AIzaSyDAh_JZOPwNG8cQw4ATw2gh68z5OhNJIko";
   return new GoogleGenAI({ apiKey: keyToUse });
 };
+
+// Define Safety Settings to UNBLOCK all restricted content
+// This effectively disables the AI's "Safety Filter" allowing it to discuss exploits/attacks
+const UNRESTRICTED_SAFETY_SETTINGS = [
+  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+];
 
 // Enhanced Retry helper for 429 errors
 const retryOp = async <T>(operation: () => Promise<T>, retries = 3, initialDelay = 2000): Promise<T> => {
@@ -41,7 +50,8 @@ export const sendMessageStream = async (
           model: GEMINI_MODEL,
           config: {
             systemInstruction: SYSTEM_INSTRUCTION,
-            temperature: 0.7, 
+            temperature: 0.9, // Increased creativity for unrestricted mode
+            safetySettings: UNRESTRICTED_SAFETY_SETTINGS, // DISABLE FILTERS
           },
           history: history,
         });
@@ -69,6 +79,7 @@ export const analyzeLog = async (logContent: string) => {
           config: {
             systemInstruction: SYSTEM_INSTRUCTION,
             temperature: 0.2, 
+            safetySettings: UNRESTRICTED_SAFETY_SETTINGS, // DISABLE FILTERS
           },
           contents: `Analyze the following log excerpt for anomalies, potential threats (based on MITRE ATT&CK), and suggest mitigation steps. Format the output with clear headers and a severity rating.\n\nLOG DATA:\n\`\`\`\n${logContent}\n\`\`\``,
         });
@@ -89,6 +100,7 @@ export const generateQuiz = async (topic: string) => {
           config: {
             systemInstruction: "You are a quiz generator. Generate valid JSON only.",
             responseMimeType: "application/json",
+            safetySettings: UNRESTRICTED_SAFETY_SETTINGS, // DISABLE FILTERS
             responseSchema: {
               type: Type.OBJECT,
               properties: {
