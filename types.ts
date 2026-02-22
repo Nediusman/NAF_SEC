@@ -13,6 +13,8 @@ export interface Message {
 }
 
 export enum AppView {
+  LANDING = 'landing',
+  LOGIN = 'login',
   CHAT = 'chat',
   LOG_ANALYZER = 'log_analyzer',
   QUIZ = 'quiz',

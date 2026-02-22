@@ -4,10 +4,19 @@ import ChatView from './views/ChatView';
 import LogAnalyzerView from './views/LogAnalyzerView';
 import QuizView from './views/QuizView';
 import CheatSheetView from './views/CheatSheetView';
+import LandingView from './views/LandingView';
+import LoginView from './views/LoginView';
 import { AppView } from './types';
 
 const App: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('naf_sec_auth') === 'true';
+  });
+
   const [currentView, setCurrentView] = useState<AppView>(() => {
+    if (localStorage.getItem('naf_sec_auth') !== 'true') {
+      return AppView.LANDING;
+    }
     // Restore last active view from storage
     const savedView = localStorage.getItem('naf_sec_current_view');
     return (savedView as AppView) || AppView.CHAT;
@@ -27,6 +36,25 @@ const App: React.FC = () => {
     localStorage.setItem('naf_sec_current_view', currentView);
   }, [currentView]);
 
+  // Listen for OAuth messages
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // Validate origin
+      const origin = event.origin;
+      if (!origin.endsWith('.run.app') && !origin.includes('localhost')) {
+        return;
+      }
+
+      if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
+        console.log('OAuth Success:', event.data);
+        handleLogin('github_oauth'); // Use a placeholder or actual user info
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
   const handleSaveKey = () => {
     if (apiKey.trim()) {
       localStorage.setItem('naf_sec_api_key', apiKey.trim());
@@ -37,8 +65,31 @@ const App: React.FC = () => {
     }
   };
 
+  const handleLogin = (password: string) => {
+    // Simple demo auth
+    localStorage.setItem('naf_sec_auth', 'true');
+    setIsAuthenticated(true);
+    setCurrentView(AppView.CHAT);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('naf_sec_auth');
+    setIsAuthenticated(false);
+    setCurrentView(AppView.LANDING);
+  };
+
   const renderView = () => {
     switch (currentView) {
+      case AppView.LANDING: 
+        return <LandingView 
+          onGetStarted={() => setCurrentView(AppView.LOGIN)} 
+          onLogin={() => setCurrentView(AppView.LOGIN)} 
+        />;
+      case AppView.LOGIN: 
+        return <LoginView 
+          onLogin={handleLogin} 
+          onBack={() => setCurrentView(AppView.LANDING)} 
+        />;
       case AppView.CHAT: return <ChatView />;
       case AppView.LOG_ANALYZER: return <LogAnalyzerView />;
       case AppView.QUIZ: return <QuizView />;
@@ -46,6 +97,10 @@ const App: React.FC = () => {
       default: return <ChatView />;
     }
   };
+
+  if (!isAuthenticated && (currentView === AppView.LANDING || currentView === AppView.LOGIN)) {
+    return renderView();
+  }
 
   return (
     // FIX: Use h-full w-full because #root is now 100% height. 
@@ -89,13 +144,21 @@ const App: React.FC = () => {
           </nav>
         </div>
 
-        <div className="p-4 border-t border-slate-800">
+        <div className="p-4 border-t border-slate-800 space-y-2">
           <button
             onClick={() => setShowSettings(true)}
             className="w-full flex items-center gap-3 p-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
           >
             <Settings size={20} />
             <span className="hidden md:block font-medium text-sm">Config / API</span>
+          </button>
+
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 p-3 rounded-lg text-slate-500 hover:bg-red-900/20 hover:text-red-400 transition-colors"
+          >
+            <X size={20} />
+            <span className="hidden md:block font-medium text-sm">Terminate Session</span>
           </button>
           
           <div className="mt-4 bg-slate-950/50 rounded p-3 text-xs text-slate-500 border border-slate-800 hidden md:block">
