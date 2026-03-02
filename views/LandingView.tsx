@@ -1,5 +1,5 @@
-import React from 'react';
-import { Shield, Zap, Terminal, Lock, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Shield, Terminal, Lock, ChevronRight, Activity, Cpu, Globe } from 'lucide-react';
 
 interface LandingViewProps {
   onGetStarted: () => void;
@@ -7,114 +7,120 @@ interface LandingViewProps {
 }
 
 const LandingView: React.FC<LandingViewProps> = ({ onGetStarted, onLogin }) => {
-  return (
-    <div className="min-h-screen bg-slate-950 text-white overflow-y-auto selection:bg-red-500/30">
-      {/* Navigation */}
-      <nav className="flex items-center justify-between px-6 py-8 md:px-12">
-        <div className="flex items-center gap-3">
-          <Shield className="text-red-500 w-8 h-8" />
-          <span className="font-bold text-xl tracking-tighter uppercase">CyberSentinel</span>
-        </div>
-        <button 
-          onClick={onLogin}
-          className="px-6 py-2 border border-white/10 rounded-full text-sm font-medium hover:bg-white hover:text-black transition-all duration-300"
-        >
-          Operator Login
-        </button>
-      </nav>
+  const [scanProgress, setScanProgress] = useState(0);
 
-      {/* Hero Section */}
-      <main className="px-6 md:px-12 pt-12 pb-24">
-        <div className="max-w-7xl mx-auto">
-          <div className="relative">
-            <h1 className="text-[15vw] md:text-[12vw] font-black leading-[0.85] tracking-tighter uppercase opacity-90">
-              Secure<br />
-              <span className="text-red-500">Intelligence</span>
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setScanProgress(prev => (prev >= 100 ? 0 : prev + 1));
+    }, 50);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-200 font-mono overflow-hidden relative selection:bg-red-500/30">
+      {/* Background Grid */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(239,68,68,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(239,68,68,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(15,23,42,0)_0%,rgba(15,23,42,1)_100%)] pointer-events-none"></div>
+
+      {/* Top Status Bar */}
+      <div className="relative z-10 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md px-6 py-3 flex justify-between items-center">
+        <div className="flex items-center gap-4">
+          <Shield className="text-red-500 w-5 h-5" />
+          <span className="text-xs font-bold tracking-[0.3em] uppercase">CyberSentinel // AEGIS-V2</span>
+        </div>
+        <div className="flex items-center gap-6 text-[10px] text-slate-500 uppercase tracking-widest">
+          <div className="flex items-center gap-2">
+            <Activity size={12} className="text-emerald-500" />
+            <span>Uplink: Active</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Cpu size={12} className="text-blue-500" />
+            <span>Load: 12%</span>
+          </div>
+          <div className="hidden md:block">Node: 0x7F-001</div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <main className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-100px)] p-6">
+        <div className="max-w-4xl w-full">
+          <div className="mb-12 space-y-2">
+            <div className="text-red-500 text-xs font-bold tracking-[0.5em] uppercase mb-4">Security Clearance Required</div>
+            <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-none">
+              System <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-800">Restricted</span>
             </h1>
-            <div className="absolute top-0 right-0 hidden lg:block">
-              <div className="w-64 h-64 border border-red-500/20 rounded-full flex items-center justify-center animate-pulse">
-                <div className="w-48 h-48 border border-red-500/40 rounded-full flex items-center justify-center">
-                  <Terminal className="text-red-500 w-12 h-12" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+            <div className="space-y-8">
+              <p className="text-slate-400 text-sm leading-relaxed max-w-md border-l-2 border-red-900/50 pl-6">
+                You are attempting to access a restricted AI-powered cybersecurity terminal. 
+                Unauthorized access is strictly prohibited and monitored by AEGIS protocol.
+              </p>
+              
+              <div className="flex flex-col gap-4">
+                <button 
+                  onClick={onLogin}
+                  className="group relative flex items-center justify-between bg-red-600 hover:bg-red-500 text-white px-8 py-4 rounded-lg font-bold text-sm transition-all overflow-hidden shadow-[0_0_20px_rgba(220,38,38,0.2)]"
+                >
+                  <span className="relative z-10 tracking-[0.2em] uppercase">Initialize Access</span>
+                  <ChevronRight className="relative z-10 group-hover:translate-x-1 transition-transform" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                </button>
+                
+                <div className="flex items-center gap-4 text-[10px] text-slate-600 uppercase tracking-widest">
+                  <div className="w-full h-[1px] bg-slate-800"></div>
+                  <span className="whitespace-nowrap">Encryption: AES-256</span>
+                  <div className="w-full h-[1px] bg-slate-800"></div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-end">
-            <div>
-              <p className="text-xl md:text-2xl text-slate-400 font-light leading-relaxed max-w-xl">
-                The next generation of AI-powered cybersecurity training and analysis. 
-                Built for operators who demand precision, speed, and ethical mastery.
-              </p>
-              <div className="mt-10 flex flex-wrap gap-6">
-                <button 
-                  onClick={onGetStarted}
-                  className="group flex items-center gap-3 bg-red-600 hover:bg-red-500 text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-[0_0_30px_rgba(220,38,38,0.3)]"
-                >
-                  Initialize System
-                  <ChevronRight className="group-hover:translate-x-1 transition-transform" />
-                </button>
+            <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-6 space-y-6 backdrop-blur-sm">
+              <div className="flex justify-between items-center border-b border-slate-800 pb-4">
+                <span className="text-[10px] text-slate-500 uppercase tracking-widest">System Scan</span>
+                <span className="text-[10px] text-red-500 font-bold">{scanProgress}%</span>
               </div>
-            </div>
+              
+              <div className="space-y-3">
+                <ScanLine label="Kernel Integrity" status="Verified" active />
+                <ScanLine label="Neural Link" status="Standby" />
+                <ScanLine label="Firewall Proxy" status="Active" active />
+                <ScanLine label="Identity Vault" status="Locked" />
+              </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <StatCard label="Live Threats" value="1.2M+" />
-              <StatCard label="Analysis Speed" value="< 50ms" />
-              <StatCard label="Active Nodes" value="4,821" />
-              <StatCard label="Security Level" value="OMEGA" />
+              <div className="pt-4">
+                <div className="w-full bg-slate-950 h-1 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-red-600 h-full transition-all duration-300" 
+                    style={{ width: `${scanProgress}%` }}
+                  ></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </main>
 
-      {/* Features Grid */}
-      <section className="px-6 md:px-12 py-24 bg-slate-900/50 border-y border-white/5">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
-          <Feature 
-            icon={<Terminal className="text-red-500" />}
-            title="Offensive Shell"
-            desc="Practice penetration testing techniques in a safe, AI-guided sandbox environment."
-          />
-          <Feature 
-            icon={<Zap className="text-emerald-400" />}
-            title="Threat Intel"
-            desc="Analyze complex logs and patterns with deep-learning powered anomaly detection."
-          />
-          <Feature 
-            icon={<Lock className="text-blue-400" />}
-            title="War Games"
-            desc="Test your skills against dynamic adversary simulations designed by security experts."
-          />
-        </div>
-      </section>
-
       {/* Footer */}
-      <footer className="px-6 py-12 border-t border-white/5 text-slate-500 text-xs font-mono uppercase tracking-widest flex flex-col md:flex-row justify-between items-center gap-6">
-        <div>© 2026 NAF_SEC_AEGIS // ALL RIGHTS RESERVED</div>
+      <footer className="absolute bottom-0 w-full px-8 py-6 flex justify-between items-center text-[10px] text-slate-700 uppercase tracking-[0.2em]">
+        <div>© 2026 NAF_SEC_AEGIS // ROOT_ACCESS_ONLY</div>
         <div className="flex gap-8">
-          <a href="#" className="hover:text-white transition-colors">Protocol</a>
-          <a href="#" className="hover:text-white transition-colors">Encryption</a>
-          <a href="#" className="hover:text-white transition-colors">Access</a>
+          <span>Encrypted Session</span>
+          <Globe size={12} />
         </div>
       </footer>
     </div>
   );
 };
 
-const StatCard = ({ label, value }: { label: string; value: string }) => (
-  <div className="p-6 border border-white/5 bg-white/5 rounded-2xl">
-    <div className="text-xs font-mono text-slate-500 uppercase tracking-widest mb-1">{label}</div>
-    <div className="text-2xl font-bold">{value}</div>
-  </div>
-);
-
-const Feature = ({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) => (
-  <div className="space-y-4">
-    <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center border border-white/10">
-      {icon}
-    </div>
-    <h3 className="text-xl font-bold">{title}</h3>
-    <p className="text-slate-400 leading-relaxed">{desc}</p>
+const ScanLine = ({ label, status, active }: { label: string; status: string; active?: boolean }) => (
+  <div className="flex justify-between items-center">
+    <span className="text-[10px] text-slate-400 uppercase">{label}</span>
+    <span className={`text-[10px] font-bold uppercase ${active ? 'text-emerald-500' : 'text-slate-600'}`}>
+      [{status}]
+    </span>
   </div>
 );
 

@@ -6,6 +6,7 @@ import QuizView from './views/QuizView';
 import CheatSheetView from './views/CheatSheetView';
 import LandingView from './views/LandingView';
 import LoginView from './views/LoginView';
+import LogoutView from './views/LogoutView';
 import { AppView } from './types';
 
 const App: React.FC = () => {
@@ -75,7 +76,7 @@ const App: React.FC = () => {
   const handleLogout = () => {
     localStorage.removeItem('naf_sec_auth');
     setIsAuthenticated(false);
-    setCurrentView(AppView.LANDING);
+    setCurrentView(AppView.LOGOUT);
   };
 
   const renderView = () => {
@@ -90,6 +91,8 @@ const App: React.FC = () => {
           onLogin={handleLogin} 
           onBack={() => setCurrentView(AppView.LANDING)} 
         />;
+      case AppView.LOGOUT:
+        return <LogoutView onComplete={() => setCurrentView(AppView.LANDING)} />;
       case AppView.CHAT: return <ChatView />;
       case AppView.LOG_ANALYZER: return <LogAnalyzerView />;
       case AppView.QUIZ: return <QuizView />;
@@ -98,7 +101,7 @@ const App: React.FC = () => {
     }
   };
 
-  if (!isAuthenticated && (currentView === AppView.LANDING || currentView === AppView.LOGIN)) {
+  if (!isAuthenticated && (currentView === AppView.LANDING || currentView === AppView.LOGIN || currentView === AppView.LOGOUT)) {
     return renderView();
   }
 

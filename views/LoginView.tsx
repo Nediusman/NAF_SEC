@@ -86,7 +86,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
               <p className="text-xs text-slate-500 uppercase tracking-widest">Identify yourself to initialize AEGIS</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -144,24 +144,6 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
                 )}
               </button>
             </form>
-
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-800"></div>
-              </div>
-              <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
-                <span className="px-2 bg-slate-900 text-slate-600">External Verification</span>
-              </div>
-            </div>
-
-            <button
-              onClick={handleGithubLogin}
-              disabled={isAuthenticating}
-              className="w-full py-3 border border-slate-700 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-all flex items-center justify-center gap-3 text-xs uppercase tracking-widest font-bold"
-            >
-              <Github size={18} />
-              GitHub Identity
-            </button>
 
             <button
               onClick={onBack}
