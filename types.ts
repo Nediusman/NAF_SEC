@@ -20,7 +20,10 @@ export enum AppView {
   LOG_ANALYZER = 'log_analyzer',
   VULN_SCANNER = 'vuln_scanner',
   QUIZ = 'quiz',
-  CHEAT_SHEET = 'cheat_sheet'
+  CHEAT_SHEET = 'cheat_sheet',
+  PROTOCOL = 'protocol',
+  TERMS = 'terms',
+  PRIVACY = 'privacy'
 }
 
 export interface QuizQuestion {

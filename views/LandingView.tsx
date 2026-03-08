@@ -4,9 +4,12 @@ import { Shield, Terminal, Lock, ChevronRight, Activity, Cpu, Globe, Zap, Target
 interface LandingViewProps {
   onGetStarted: () => void;
   onLogin: () => void;
+  onViewProtocol: () => void;
+  onViewTerms: () => void;
+  onViewPrivacy: () => void;
 }
 
-const LandingView: React.FC<LandingViewProps> = ({ onGetStarted, onLogin }) => {
+const LandingView: React.FC<LandingViewProps> = ({ onGetStarted, onLogin, onViewProtocol, onViewTerms, onViewPrivacy }) => {
   const [scanProgress, setScanProgress] = useState(0);
 
   useEffect(() => {
@@ -254,9 +257,9 @@ const LandingView: React.FC<LandingViewProps> = ({ onGetStarted, onLogin }) => {
           </div>
           
           <div className="flex justify-end gap-8 text-[10px] text-slate-500 uppercase tracking-widest">
-            <span className="hover:text-red-500 cursor-pointer transition-colors">Protocol</span>
-            <span className="hover:text-red-500 cursor-pointer transition-colors">Privacy</span>
-            <span className="hover:text-red-500 cursor-pointer transition-colors">Terms</span>
+            <span onClick={onViewProtocol} className="hover:text-red-500 cursor-pointer transition-colors">Protocol</span>
+            <span onClick={onViewPrivacy} className="hover:text-red-500 cursor-pointer transition-colors">Privacy</span>
+            <span onClick={onViewTerms} className="hover:text-red-500 cursor-pointer transition-colors">Terms</span>
           </div>
         </div>
       </footer>

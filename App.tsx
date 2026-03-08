@@ -8,6 +8,7 @@ import VulnScannerView from './views/VulnScannerView';
 import LandingView from './views/LandingView';
 import LoginView from './views/LoginView';
 import LogoutView from './views/LogoutView';
+import LegalView from './views/LegalView';
 import { AppView } from './types';
 
 const App: React.FC = () => {
@@ -86,6 +87,9 @@ const App: React.FC = () => {
         return <LandingView 
           onGetStarted={() => setCurrentView(AppView.LOGIN)} 
           onLogin={() => setCurrentView(AppView.LOGIN)} 
+          onViewProtocol={() => setCurrentView(AppView.PROTOCOL)}
+          onViewTerms={() => setCurrentView(AppView.TERMS)}
+          onViewPrivacy={() => setCurrentView(AppView.PRIVACY)}
         />;
       case AppView.LOGIN: 
         return <LoginView 
@@ -94,6 +98,10 @@ const App: React.FC = () => {
         />;
       case AppView.LOGOUT:
         return <LogoutView onComplete={() => setCurrentView(AppView.LANDING)} />;
+      case AppView.PROTOCOL:
+      case AppView.TERMS:
+      case AppView.PRIVACY:
+        return <LegalView type={currentView} onBack={() => setCurrentView(AppView.LANDING)} />;
       case AppView.CHAT: return <ChatView />;
       case AppView.LOG_ANALYZER: return <LogAnalyzerView />;
       case AppView.VULN_SCANNER: return <VulnScannerView />;
