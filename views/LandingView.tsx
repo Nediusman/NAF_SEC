@@ -26,7 +26,7 @@ const LandingView: React.FC<LandingViewProps> = ({ onGetStarted, onLogin }) => {
       <div className="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/80 backdrop-blur-md px-6 py-3 flex justify-between items-center">
         <div className="flex items-center gap-4">
           <Shield className="text-red-500 w-5 h-5" />
-          <span className="text-xs font-bold tracking-[0.3em] uppercase">CyberSentinel // AEGIS-V2</span>
+          <span className="text-xs font-bold tracking-[0.3em] uppercase">NAF_SEC_AEGIS // AEGIS-V2</span>
         </div>
         <div className="flex items-center gap-6 text-[10px] text-slate-500 uppercase tracking-widest">
           <div className="flex items-center gap-2">
@@ -57,8 +57,8 @@ const LandingView: React.FC<LandingViewProps> = ({ onGetStarted, onLogin }) => {
                   <span className="text-[10px] text-red-400 font-bold uppercase tracking-[0.3em]">System Restricted // Level 5</span>
                 </div>
                 <h1 className="text-7xl md:text-9xl font-black tracking-tighter uppercase leading-[0.8] text-white">
-                  CYBER<br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-800">SENTINEL</span>
+                  NAF__<br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-800">SECURITY</span>
                 </h1>
               </div>
 
@@ -246,7 +246,7 @@ const LandingView: React.FC<LandingViewProps> = ({ onGetStarted, onLogin }) => {
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 items-center">
           <div className="flex items-center gap-3">
             <Shield className="text-red-500 w-6 h-6" />
-            <span className="font-bold text-lg tracking-tighter uppercase text-white">CyberSentinel</span>
+            <span className="font-bold text-lg tracking-tighter uppercase text-white">NAF_SEC_AEGIS</span>
           </div>
           
           <div className="text-[10px] text-slate-600 uppercase tracking-[0.3em] text-center">
