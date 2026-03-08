@@ -18,6 +18,7 @@ export enum AppView {
   LOGOUT = 'logout',
   CHAT = 'chat',
   LOG_ANALYZER = 'log_analyzer',
+  VULN_SCANNER = 'vuln_scanner',
   QUIZ = 'quiz',
   CHEAT_SHEET = 'cheat_sheet'
 }

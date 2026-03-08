@@ -130,3 +130,31 @@ export const generateQuiz = async (topic: string) => {
     throw error;
   }
 };
+
+export const scanVulnerabilities = async (target: string) => {
+  try {
+    return await retryOp(async () => {
+        const ai = getGenAI();
+        const response = await ai.models.generateContent({
+          model: GEMINI_MODEL,
+          config: {
+            systemInstruction: SYSTEM_INSTRUCTION,
+            temperature: 0.7, 
+            safetySettings: UNRESTRICTED_SAFETY_SETTINGS,
+          },
+          contents: `Simulate a vulnerability scan report for the target: ${target}. 
+          Provide a detailed technical report including:
+          1. Open Ports & Services (simulated)
+          2. Detected Vulnerabilities (with CVE IDs if applicable)
+          3. Risk Severity (Critical/High/Medium/Low)
+          4. Remediation Steps
+          
+          Use a professional, technical tone. Format with Markdown. Do not include any real personal data.`,
+        });
+        return response.text;
+    });
+  } catch (error) {
+    console.error("Error in scanVulnerabilities:", error);
+    throw error;
+  }
+};

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Terminal, Shield, FileSearch, BrainCircuit, Activity, BookOpen, Skull, Settings, Key, X, Check, Save } from 'lucide-react';
+import { Terminal, Shield, FileSearch, BrainCircuit, Activity, BookOpen, Skull, Settings, Key, X, Check, Save, ShieldAlert } from 'lucide-react';
 import ChatView from './views/ChatView';
 import LogAnalyzerView from './views/LogAnalyzerView';
 import QuizView from './views/QuizView';
 import CheatSheetView from './views/CheatSheetView';
+import VulnScannerView from './views/VulnScannerView';
 import LandingView from './views/LandingView';
 import LoginView from './views/LoginView';
 import LogoutView from './views/LogoutView';
@@ -95,6 +96,7 @@ const App: React.FC = () => {
         return <LogoutView onComplete={() => setCurrentView(AppView.LANDING)} />;
       case AppView.CHAT: return <ChatView />;
       case AppView.LOG_ANALYZER: return <LogAnalyzerView />;
+      case AppView.VULN_SCANNER: return <VulnScannerView />;
       case AppView.QUIZ: return <QuizView />;
       case AppView.CHEAT_SHEET: return <CheatSheetView />;
       default: return <ChatView />;
@@ -131,6 +133,12 @@ const App: React.FC = () => {
               onClick={() => setCurrentView(AppView.LOG_ANALYZER)}
               icon={<FileSearch size={20} />}
               label="Threat Intel"
+            />
+            <NavButton 
+              active={currentView === AppView.VULN_SCANNER}
+              onClick={() => setCurrentView(AppView.VULN_SCANNER)}
+              icon={<ShieldAlert size={20} />}
+              label="V-Scan"
             />
             <NavButton 
               active={currentView === AppView.QUIZ}
@@ -180,6 +188,7 @@ const App: React.FC = () => {
           <h2 className="font-mono text-sm text-red-400 font-bold tracking-widest uppercase truncate">
             {currentView === AppView.CHAT && "Interactive Root Shell // VANGUARD"}
             {currentView === AppView.LOG_ANALYZER && "Pattern Analysis & Detection"}
+            {currentView === AppView.VULN_SCANNER && "Vulnerability Assessment Engine"}
             {currentView === AppView.QUIZ && "Adversary Simulation Lab"}
             {currentView === AppView.CHEAT_SHEET && "Master Attack Library"}
           </h2>
